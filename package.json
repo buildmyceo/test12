@@ -1,0 +1,17 @@
+{
+  "name": "laura-restaurant",
+  "version": "1.0.0",
+  "description": "L'AURA - Artisanal Modern Brasserie & Farm-to-Table Kitchen Website",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["restaurant", "gastronomy", "reservations", "fine-dining"],
+  "author": "L'AURA Culinary Group",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.2"
+  }
+}

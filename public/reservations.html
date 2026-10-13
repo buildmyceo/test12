@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reservations & Private Dining | L'AURA</title>
+  <meta name="description" content="Reserve your table at L'AURA. Select between our Main Brasserie Hall, Botanical Glasshouse Conservatory, or Chef's Counter.">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238F4F2E'/><text x='50%' y='65%' font-family='serif' font-size='56' fill='%23FAF8F5' text-anchor='middle'>L</text></svg>">
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <div class="top-bar-left">
+        <span class="top-bar-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          428 Heritage Way, Historic Quarter, San Francisco
+        </span>
+        <span class="top-bar-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Dinner Service: 5:00 PM – 11:00 PM
+        </span>
+      </div>
+      <div class="top-bar-right">
+        <div id="liveStatusBadge" class="live-badge open">
+          <span class="status-dot"></span>
+          <span>Checking Restaurant Hours...</span>
+        </div>
+        <a href="tel:+14155550198" style="font-weight: 600; color: var(--accent-terracotta);">+1 (415) 555-0198</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Site Navigation -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="/" class="brand-logo" aria-label="L'AURA Homepage">
+        <div class="brand-monogram">L</div>
+        <div class="brand-text">
+          <span class="brand-name">L'AURA</span>
+          <span class="brand-subtitle">Brasserie & Botanicals</span>
+        </div>
+      </a>
+
+      <nav class="nav-links" id="navLinks" aria-label="Main Navigation">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/menu" class="nav-link">Dining Menu</a>
+        <a href="/about" class="nav-link">Our Story</a>
+        <a href="/reservations" class="nav-link active">Reservations</a>
+        <a href="/contact" class="nav-link">Contact & Location</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="cart-toggle-btn" aria-label="View Tasting Order">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-count-badge" style="display: none;">0</span>
+        </button>
+        <a href="/reservations" class="btn btn-primary btn-sm">Reserve a Table</a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Reservation Header -->
+  <section class="section-spacing" style="padding-bottom: 2rem;">
+    <div class="container">
+      <div class="section-header" style="max-width: 760px; margin-bottom: 2.5rem;">
+        <span class="eyebrow">Table Reservations</span>
+        <h1>Reserve Your Dining Experience</h1>
+        <p>
+          Reservations release 30 days in advance at 9:00 AM PST. For celebrations, private dining, or parties of six or larger, please reserve below or connect with our concierge.
+        </p>
+      </div>
+
+      <!-- Main Booking Wizard Card -->
+      <div class="reservation-card" style="max-width: 980px; margin: 0 auto 4rem auto;">
+        <form id="reservationForm">
+          <!-- Step 1: Dining Experience Area -->
+          <div style="margin-bottom: 2.25rem;">
+            <label class="form-label" style="font-size: 1.05rem; margin-bottom: 0.75rem;">
+              Step 1: Select Your Dining Atmosphere
+            </label>
+            <div class="experience-selector-grid">
+              <div class="experience-choice-box selected" data-exp="main-dining" data-name="Main Brasserie Hall">
+                <span class="badge badge-terracotta" style="margin-bottom: 0.5rem;">Classic</span>
+                <h4 style="margin-bottom: 0.25rem;">Main Brasserie Hall</h4>
+                <p style="font-size: 0.825rem; color: var(--text-secondary); margin: 0;">
+                  Arched windows, oak wainscoting & warm brass fixtures.
+                </p>
+              </div>
+
+              <div class="experience-choice-box" data-exp="garden-conservatory" data-name="Glasshouse Garden Conservatory">
+                <span class="badge badge-sage" style="margin-bottom: 0.5rem;">Botanical</span>
+                <h4 style="margin-bottom: 0.25rem;">Garden Conservatory</h4>
+                <p style="font-size: 0.825rem; color: var(--text-secondary); margin: 0;">
+                  Surrounded by live citrus trees, jasmine vines & glass roof.
+                </p>
+              </div>
+
+              <div class="experience-choice-box" data-exp="chefs-counter" data-name="Chef Eleanor Vance's Counter">
+                <span class="badge badge-gold" style="margin-bottom: 0.5rem;">Interactive</span>
+                <h4 style="margin-bottom: 0.25rem;">Chef's Hearth Counter</h4>
+                <p style="font-size: 0.825rem; color: var(--text-secondary); margin: 0;">
+                  Front-row 8-seat tasting menu facing the wood-fired kitchen.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 2: Date & Time -->
+          <div class="form-row" style="margin-bottom: 2rem;">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label" for="resDateInput">Step 2: Date of Visit</label>
+              <input type="date" id="resDateInput" class="form-control" required>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Preferred Time Slot</label>
+              <div class="time-slot-grid">
+                <button type="button" class="time-slot-btn" data-time="17:00">5:00 PM</button>
+                <button type="button" class="time-slot-btn" data-time="17:30">5:30 PM</button>
+                <button type="button" class="time-slot-btn" data-time="18:15">6:15 PM</button>
+                <button type="button" class="time-slot-btn" data-time="19:00">7:00 PM</button>
+                <button type="button" class="time-slot-btn selected" data-time="19:30">7:30 PM</button>
+                <button type="button" class="time-slot-btn" data-time="20:15">8:15 PM</button>
+                <button type="button" class="time-slot-btn" data-time="20:45">8:45 PM</button>
+                <button type="button" class="time-slot-btn" data-time="21:15">9:15 PM</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Step 3: Guests -->
+          <div style="margin-bottom: 2.25rem;">
+            <label class="form-label" style="font-size: 1.05rem; margin-bottom: 0.75rem;">
+              Step 3: Number of Guests
+            </label>
+            <div class="guest-stepper">
+              <button type="button" class="guest-pill" data-guests="1">1</button>
+              <button type="button" class="guest-pill selected" data-guests="2">2</button>
+              <button type="button" class="guest-pill" data-guests="3">3</button>
+              <button type="button" class="guest-pill" data-guests="4">4</button>
+              <button type="button" class="guest-pill" data-guests="5">5</button>
+              <button type="button" class="guest-pill" data-guests="6">6</button>
+              <button type="button" class="guest-pill" data-guests="8">8+</button>
+            </div>
+          </div>
+
+          <!-- Step 4: Contact & Details -->
+          <div style="border-top: 1px solid var(--border-light); padding-top: 2rem; margin-bottom: 2rem;">
+            <label class="form-label" style="font-size: 1.05rem; margin-bottom: 1.25rem;">
+              Step 4: Guest Contact & Dining Notes
+            </label>
+
+            <div class="form-row-3">
+              <div class="form-group">
+                <label class="form-label" for="resName">Full Name *</label>
+                <input type="text" id="resName" class="form-control" placeholder="Eleanor Vance" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="resEmail">Email Address *</label>
+                <input type="email" id="resEmail" class="form-control" placeholder="name@example.com" required>
+              </div>
+              <div class="form-group">
+                <label class="form-label" for="resPhone">Mobile Phone *</label>
+                <input type="tel" id="resPhone" class="form-control" placeholder="+1 (415) 555-0198" required>
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label class="form-label" for="resOccasion">Occasion / Dining Focus</label>
+                <select id="resOccasion" class="form-control">
+                  <option value="Dining Experience">Casual Fine Dining</option>
+                  <option value="Anniversary Celebration">Anniversary Celebration</option>
+                  <option value="Birthday Dinner">Birthday Dinner</option>
+                  <option value="Executive Business Dinner">Executive Business Dinner</option>
+                  <option value="Wine Tasting & Pairing">Wine Tasting & Pairing</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="resNotes">Dietary Restrictions & Special Requests</label>
+                <input type="text" id="resNotes" class="form-control" placeholder="e.g. 1 Gluten-free guest, anniversary table preference...">
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 1.5rem;">
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0; max-width: 480px;">
+              No booking deposit is required. By reserving, you agree to our 24-hour cancellation policy.
+            </p>
+            <button type="submit" id="resSubmitBtn" class="btn btn-primary btn-lg">
+              Confirm Dining Reservation
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Manage / Look Up Reservation Card -->
+      <div style="max-width: 760px; margin: 0 auto 5rem auto; background-color: var(--bg-surface); border: 1px solid var(--border-medium); border-radius: var(--radius-md); padding: 2rem;">
+        <div style="display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem;">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent-terracotta)" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <h3 style="font-size: 1.35rem; margin: 0;">Look Up or Manage Existing Reservation</h3>
+        </div>
+        <p style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 1.25rem;">
+          Have a reservation code? (e.g. <code>RES-8841</code> or <code>RES-9204</code>) Enter below to view details, cancel, or download calendar invite.
+        </p>
+
+        <form id="lookupForm" style="display: flex; gap: 0.75rem;">
+          <input type="text" id="lookupCodeInput" class="form-control" placeholder="Enter reference code (e.g. RES-8841)" style="text-transform: uppercase;" required>
+          <button type="submit" class="btn btn-outline" style="white-space: nowrap;">Find Reservation</button>
+        </form>
+
+        <div id="lookupResultArea"></div>
+      </div>
+
+      <!-- Reservation Policies & Information -->
+      <div style="max-width: 980px; margin: 0 auto;">
+        <div class="section-header" style="margin-bottom: 2.5rem;">
+          <span class="eyebrow eyebrow-sage">Important Notes</span>
+          <h2>Dining Room Etiquette & Policies</h2>
+        </div>
+
+        <div class="metrics-grid" style="grid-template-columns: repeat(3, 1fr);">
+          <div class="card" style="padding: 1.75rem;">
+            <h4 style="margin-bottom: 0.5rem; color: var(--accent-terracotta);">Cancellation Policy</h4>
+            <p style="font-size: 0.88rem;">We appreciate notice of cancellation at least 24 hours prior to service so that fellow guests on our waitlist may be accommodated.</p>
+          </div>
+
+          <div class="card" style="padding: 1.75rem;">
+            <h4 style="margin-bottom: 0.5rem; color: var(--accent-sage);">Dress Code</h4>
+            <p style="font-size: 0.88rem;">Smart Casual / Elegant Evening wear. We kindly request guests refrain from athletic wear, beachwear, or baseball caps in the dining room.</p>
+          </div>
+
+          <div class="card" style="padding: 1.75rem;">
+            <h4 style="margin-bottom: 0.5rem; color: var(--accent-gold);">Corkage & Cellar</h4>
+            <p style="font-size: 0.88rem;">$50 per 750ml bottle for up to two bottles not currently featured on our wine list. Fee is waived for each bottle purchased from our cellar.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Confirmation Ticket Modal -->
+  <div class="modal-overlay" id="confirmationModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Booking Confirmation</h3>
+        <button class="modal-close-btn" id="confirmationModalClose" aria-label="Close modal">✕</button>
+      </div>
+      <div class="modal-body" id="confirmationModalBody">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasting Order Drawer (Slide-In) -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-label="Tasting Order Drawer">
+    <div class="drawer-header">
+      <div>
+        <h3 style="font-size: 1.35rem; margin-bottom: 0.15rem;">Your Tasting Order</h3>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Curated selections for your visit</span>
+      </div>
+      <button class="modal-close-btn" id="drawerCloseBtn" aria-label="Close drawer">✕</button>
+    </div>
+    <div class="drawer-items" id="drawerItemsContainer">
+      <!-- Items dynamically populated via CartState -->
+    </div>
+    <div class="drawer-footer">
+      <div class="drawer-total-row">
+        <span>Tasting Total</span>
+        <span id="drawerTotalAmount" style="color: var(--accent-terracotta);">$0.00</span>
+      </div>
+      <a href="/reservations" class="btn btn-primary" style="width: 100%; margin-bottom: 0.75rem;">
+        Book Table with Tasting Selection
+      </a>
+      <p style="font-size: 0.75rem; text-align: center; color: var(--text-muted);">
+        Your curated items will be noted for your dining party upon arrival.
+      </p>
+    </div>
+  </aside>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top-grid">
+        <div class="footer-brand">
+          <div class="brand-logo" style="margin-bottom: 1rem;">
+            <div class="brand-monogram">L</div>
+            <div class="brand-text">
+              <span class="brand-name">L'AURA</span>
+              <span class="brand-subtitle">Brasserie & Botanicals</span>
+            </div>
+          </div>
+          <p>
+            An award-winning Michelin two-star culinary destination committed to seasonal farm partnerships, wood-fired hearth cooking, and thoughtful hospitality.
+          </p>
+          <div style="font-size: 0.875rem; color: var(--text-secondary);">
+            <strong>Concierge:</strong> +1 (415) 555-0198<br>
+            <strong>Inquiries:</strong> concierge@laurarestaurant.com
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/menu">Full Dining Menu</a></li>
+            <li><a href="/about">Our Story & Farm Partners</a></li>
+            <li><a href="/reservations">Book a Table Online</a></li>
+            <li><a href="/contact">Location & Hours</a></li>
+            <li><a href="/contact#faq">Frequently Asked Questions</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Service Hours</h4>
+          <div class="footer-hours-row">
+            <span>Tuesday – Thursday</span>
+            <span>5:00 PM – 10:30 PM</span>
+          </div>
+          <div class="footer-hours-row">
+            <span>Friday & Saturday</span>
+            <span>12:00 PM – 11:00 PM</span>
+          </div>
+          <div class="footer-hours-row">
+            <span>Sunday (Botanical Brunch)</span>
+            <span>11:30 AM – 9:30 PM</span>
+          </div>
+          <div class="footer-hours-row" style="color: var(--text-muted);">
+            <span>Monday</span>
+            <span>Closed (Harvest Day)</span>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Cellar Notes & Harvest News</h4>
+          <p style="font-size: 0.85rem; margin-bottom: 0.75rem;">
+            Join our private circle to receive seasonal tasting menu releases, winemaker dinner invitations, and botanical cocktail recipes.
+          </p>
+          <form class="newsletter-form" id="newsletterForm">
+            <input type="email" class="newsletter-input" placeholder="Your email address..." required>
+            <button type="submit" class="btn btn-primary btn-sm">Join</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          © 2026 L'AURA Culinary Hospitality Group. All rights reserved. 428 Heritage Way, San Francisco, CA.
+        </div>
+        <div style="display: flex; gap: 1.5rem;">
+          <a href="/reservations">Booking Policy</a>
+          <a href="/contact">Private Events</a>
+          <a href="/contact">Accessibility</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/reservations.js"></script>
+</body>
+</html>

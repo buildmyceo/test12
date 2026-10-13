@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>L'AURA | Artisanal Modern Brasserie & Farm-to-Table Dining</title>
+  <meta name="description" content="Experience award-winning dining at L'AURA. Seasonal tasting menus, wood-fired hearth specialties, and an enchanting botanical conservatory in San Francisco.">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238F4F2E'/><text x='50%' y='65%' font-family='serif' font-size='56' fill='%23FAF8F5' text-anchor='middle'>L</text></svg>">
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <div class="top-bar-left">
+        <span class="top-bar-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          428 Heritage Way, Historic Quarter, San Francisco
+        </span>
+        <span class="top-bar-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Dinner: Tue–Sun 5:00 PM – 11:00 PM
+        </span>
+      </div>
+      <div class="top-bar-right">
+        <div id="liveStatusBadge" class="live-badge open">
+          <span class="status-dot"></span>
+          <span>Checking Restaurant Hours...</span>
+        </div>
+        <a href="tel:+14155550198" style="font-weight: 600; color: var(--accent-terracotta);">+1 (415) 555-0198</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Site Navigation -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="/" class="brand-logo" aria-label="L'AURA Homepage">
+        <div class="brand-monogram">L</div>
+        <div class="brand-text">
+          <span class="brand-name">L'AURA</span>
+          <span class="brand-subtitle">Brasserie & Botanicals</span>
+        </div>
+      </a>
+
+      <nav class="nav-links" id="navLinks" aria-label="Main Navigation">
+        <a href="/" class="nav-link active">Home</a>
+        <a href="/menu" class="nav-link">Dining Menu</a>
+        <a href="/about" class="nav-link">Our Story</a>
+        <a href="/reservations" class="nav-link">Reservations</a>
+        <a href="/contact" class="nav-link">Contact & Location</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="cart-toggle-btn" aria-label="View Tasting Order">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-count-badge" style="display: none;">0</span>
+        </button>
+        <a href="/reservations" class="btn btn-primary btn-sm">Reserve a Table</a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero-section">
+    <div class="container hero-grid">
+      <div class="hero-content">
+        <span class="eyebrow">Two Stars • Michelin Guide 2024</span>
+        <h1 class="hero-title">
+          A Symphony of Terroir, <span>Artisanal Craft</span> & Botanical Grace.
+        </h1>
+        <p class="hero-description">
+          Honoring northern California’s micro-climates through classical French culinary artistry and wood-fired intimacy. Welcome to an unhurried haven of hospitality.
+        </p>
+
+        <div class="hero-buttons">
+          <a href="/reservations" class="btn btn-primary btn-lg">Book a Table</a>
+          <a href="/menu" class="btn btn-outline btn-lg">View Dining Menu</a>
+        </div>
+
+        <div class="hero-accolades">
+          <div class="accolade-item">
+            <span class="accolade-number">2★</span>
+            <span class="accolade-label">Michelin Stars</span>
+          </div>
+          <div class="accolade-item">
+            <span class="accolade-number">14</span>
+            <span class="accolade-label">Partner Farms</span>
+          </div>
+          <div class="accolade-item">
+            <span class="accolade-number">980</span>
+            <span class="accolade-label">Cellar Labels</span>
+          </div>
+          <div class="accolade-item">
+            <span class="accolade-number">100%</span>
+            <span class="accolade-label">Organic Harvest</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="hero-media-wrapper">
+        <div class="hero-image-card">
+          <img src="/images/sea_bass.jpg" alt="Pan-Seared Chilean Sea Bass with Saffron Beurre Blanc" width="600" height="450">
+        </div>
+        <div class="hero-floating-card">
+          <span class="badge badge-terracotta" style="margin-bottom: 0.4rem;">Chef's Signature</span>
+          <h4>Pan-Seared Chilean Sea Bass</h4>
+          <p>Saffron beurre blanc, crispy flash-fried leeks & foraged coastal microgreens.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Highlights / Metrics Banner -->
+  <section class="metrics-banner">
+    <div class="container">
+      <div class="metrics-grid">
+        <div class="metric-box">
+          <div class="metric-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          </div>
+          <div>
+            <h3 class="metric-title">100% Regenerative</h3>
+            <p class="metric-sub">Direct partnerships with 14 family-owned Sonoma & Marin farms.</p>
+          </div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path></svg>
+          </div>
+          <div>
+            <h3 class="metric-title">White Oak Hearth</h3>
+            <p class="metric-sub">Embers-roasted specialties infused with natural oak aroma.</p>
+          </div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+          </div>
+          <div>
+            <h3 class="metric-title">Biodynamic Cellar</h3>
+            <p class="metric-sub">Curated low-intervention wines by Master Sommelier Marcus Thorne.</p>
+          </div>
+        </div>
+        <div class="metric-box">
+          <div class="metric-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+          </div>
+          <div>
+            <h3 class="metric-title">Seasonal Innovation</h3>
+            <p class="metric-sub">Menu dynamically evolves bi-weekly with seasonal harvest cycles.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Signature Dishes Highlight Section -->
+  <section class="section-spacing">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Autumn Harvest Tastings</span>
+        <h2>Curated Culinary Signatures</h2>
+        <p>Each plate is a tribute to pure ingredients, culinary balance, and sensory discovery.</p>
+      </div>
+
+      <div class="dishes-grid">
+        <!-- Dish 1 -->
+        <article class="card dish-card">
+          <div class="dish-media">
+            <img src="/images/sea_bass.jpg" alt="Pan-Seared Chilean Sea Bass" loading="lazy">
+            <span class="badge badge-terracotta dish-badge-overlay">Chef's Signature</span>
+            <div class="dish-price-tag">$48</div>
+          </div>
+          <div class="dish-body">
+            <div class="dish-header-row">
+              <h3 class="dish-name">Pan-Seared Chilean Sea Bass</h3>
+            </div>
+            <p class="dish-description">Crisp-skinned Chilean sea bass served over vibrant saffron beurre blanc, flash-fried crispy leeks, heirloom microgreens, and herb oil infusion.</p>
+            <div class="dish-meta-tags">
+              <span class="tag-pill">Gluten-Free</span>
+              <span class="tag-pill">Wild-Caught</span>
+              <span class="tag-pill">Saffron Beurre Blanc</span>
+            </div>
+            <div class="dish-footer-row">
+              <a href="/menu" class="btn btn-ghost btn-sm" style="padding-left: 0;">View in Menu →</a>
+              <button class="btn btn-primary btn-sm" onclick="CartState.addItem({id: 'sea-bass-saffron', name: 'Pan-Seared Chilean Sea Bass', price: 48, image: '/images/sea_bass.jpg'})">
+                Add to Order
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Dish 2 -->
+        <article class="card dish-card">
+          <div class="dish-media">
+            <img src="/images/truffle_pasta.jpg" alt="House Tagliolini al Tartufo" loading="lazy">
+            <span class="badge badge-sage dish-badge-overlay">Handmade Daily</span>
+            <div class="dish-price-tag">$38</div>
+          </div>
+          <div class="dish-body">
+            <div class="dish-header-row">
+              <h3 class="dish-name">House Tagliolini al Tartufo</h3>
+            </div>
+            <p class="dish-description">Silk ribbon tagliolini extruded daily in-house, swirled in cultured Normandy butter, 30-month Parmigiano-Reggiano, and topped with shaved black winter truffle.</p>
+            <div class="dish-meta-tags">
+              <span class="tag-pill">Vegetarian</span>
+              <span class="tag-pill">Black Winter Truffle</span>
+              <span class="tag-pill">Parmigiano 30M</span>
+            </div>
+            <div class="dish-footer-row">
+              <a href="/menu" class="btn btn-ghost btn-sm" style="padding-left: 0;">View in Menu →</a>
+              <button class="btn btn-primary btn-sm" onclick="CartState.addItem({id: 'truffle-tagliolini', name: 'House Tagliolini al Tartufo', price: 38, image: '/images/truffle_pasta.jpg'})">
+                Add to Order
+              </button>
+            </div>
+          </div>
+        </article>
+
+        <!-- Dish 3 -->
+        <article class="card dish-card">
+          <div class="dish-media">
+            <img src="/images/fig_tart.jpg" alt="Roasted Fig & Wild Blackberry Tart" loading="lazy">
+            <span class="badge badge-gold dish-badge-overlay">Pastry Specialty</span>
+            <div class="dish-price-tag">$18</div>
+          </div>
+          <div class="dish-body">
+            <div class="dish-header-row">
+              <h3 class="dish-name">Roasted Fig & Blackberry Tart</h3>
+            </div>
+            <p class="dish-description">Butter puff pastry shell layered with roasted mission figs, tart wild mountain blackberries, whipped Madagascar vanilla mascarpone, and roasted Sicilian pistachios.</p>
+            <div class="dish-meta-tags">
+              <span class="tag-pill">Vegetarian</span>
+              <span class="tag-pill">Mission Figs</span>
+              <span class="tag-pill">Vanilla Mascarpone</span>
+            </div>
+            <div class="dish-footer-row">
+              <a href="/menu" class="btn btn-ghost btn-sm" style="padding-left: 0;">View in Menu →</a>
+              <button class="btn btn-primary btn-sm" onclick="CartState.addItem({id: 'fig-blackberry-tart', name: 'Roasted Fig & Blackberry Tart', price: 18, image: '/images/fig_tart.jpg'})">
+                Add to Order
+              </button>
+            </div>
+          </div>
+        </article>
+      </div>
+
+      <div style="text-align: center; margin-top: 3.5rem;">
+        <a href="/menu" class="btn btn-outline btn-lg">Explore Full Dining Menu (15+ Items)</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Chef Spotlight Section -->
+  <section class="section-spacing" style="background-color: var(--bg-surface); border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);">
+    <div class="container split-feature">
+      <div class="split-media">
+        <img src="/images/chef_eleanor.jpg" alt="Executive Head Chef Eleanor Vance" width="600" height="450">
+      </div>
+      <div>
+        <span class="eyebrow eyebrow-sage">Culinary Leadership</span>
+        <h2>Executive Chef Eleanor Vance</h2>
+        <p>
+          Trained across Lyon and the northern California wine country, Chef Eleanor Vance founded L'AURA with a singular commitment: that fine dining should be vibrant, generous, and unpretentious.
+        </p>
+        
+        <div class="chef-quote-box">
+          <p>
+            "A truly unforgettable meal doesn't come from complicating nature — it comes from listening to the morning harvest and treating every single herb with reverence."
+          </p>
+          <div class="chef-signature-author">— Eleanor Vance, Executive Head Chef</div>
+        </div>
+
+        <div style="display: flex; gap: 1rem; align-items: center; flex-wrap: wrap;">
+          <a href="/about" class="btn btn-primary">Discover Our Philosophy & Team</a>
+          <a href="/reservations" class="btn btn-outline">Book Chef's Counter Seating</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Dining Spaces & Atmospheres -->
+  <section class="section-spacing">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Atmospheres</span>
+        <h2>Three Distinct Dining Settings</h2>
+        <p>From sun-drenched botanical conservatories to the energy of our wood-fired open hearth.</p>
+      </div>
+
+      <div class="experience-grid">
+        <div class="card experience-card">
+          <img src="/images/interior.jpg" alt="Main Brasserie Dining Room">
+          <div class="experience-card-body">
+            <span class="badge badge-terracotta" style="margin-bottom: 0.5rem; width: fit-content;">Classic Elegance</span>
+            <h3>Main Brasserie Hall</h3>
+            <p>French oak paneling, arched architectural windows, and warm ambient brass chandeliers create a timeless celebratory atmosphere.</p>
+            <div class="experience-capacity">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>Up to 8 guests per table</span>
+            </div>
+            <a href="/reservations" class="btn btn-outline btn-sm">Reserve Hall Table</a>
+          </div>
+        </div>
+
+        <div class="card experience-card">
+          <img src="/images/conservatory.jpg" alt="Glasshouse Garden Conservatory">
+          <div class="badge-overlay"></div>
+          <div class="experience-card-body">
+            <span class="badge badge-sage" style="margin-bottom: 0.5rem; width: fit-content;">Botanical Haven</span>
+            <h3>Garden Conservatory</h3>
+            <p>Enclosed glasshouse surrounded by fragrant blooming jasmine, potted Meyer lemon trees, and stone pathways. Pure daylight and evening stars.</p>
+            <div class="experience-capacity">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>Up to 12 guests / Private Luncheons</span>
+            </div>
+            <a href="/reservations" class="btn btn-outline btn-sm">Reserve Conservatory</a>
+          </div>
+        </div>
+
+        <div class="card experience-card">
+          <img src="/images/cocktail.jpg" alt="Botanical Bar and Lounge">
+          <div class="experience-card-body">
+            <span class="badge badge-gold" style="margin-bottom: 0.5rem; width: fit-content;">Aperitivo & Cellar</span>
+            <h3>Botanical Bar & Lounge</h3>
+            <p>White marble bar counter serving handcrafted botanical herb cordials, rare armagnacs, and our full tasting menu for walk-ins and guests.</p>
+            <div class="experience-capacity">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>
+              <span>Walk-ins welcome & Counter Seating</span>
+            </div>
+            <a href="/menu" class="btn btn-outline btn-sm">View Cocktails</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Critical Reviews / Press Testimonials -->
+  <section class="section-spacing" style="background-color: var(--bg-surface); border-top: 1px solid var(--border-light);">
+    <div class="container">
+      <div class="section-header">
+        <span class="eyebrow">Acclaim & Recognition</span>
+        <h2>Words from Our Diners</h2>
+        <p>A reflection of our enduring dedication to hospitality and gastronomic joy.</p>
+      </div>
+
+      <div class="testimonials-grid">
+        <div class="testimonial-card">
+          <div class="rating-stars">★★★★★</div>
+          <p class="testimonial-text">
+            "Chef Eleanor Vance has created something exceedingly rare: a two-Michelin-starred restaurant where the dining room feels as warm and welcoming as a country estate."
+          </p>
+          <div class="reviewer-profile">
+            <div class="reviewer-avatar">NY</div>
+            <div>
+              <div class="reviewer-name">The New York Times</div>
+              <div class="reviewer-tag">Dining Critic Review</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="rating-stars">★★★★★</div>
+          <p class="testimonial-text">
+            "The house tagliolini with black winter truffle and the glasshouse conservatory dining experience made our wedding anniversary completely unforgettable."
+          </p>
+          <div class="reviewer-profile">
+            <div class="reviewer-avatar">SM</div>
+            <div>
+              <div class="reviewer-name">Sophia & Daniel Montgomery</div>
+              <div class="reviewer-tag">San Francisco, CA</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="testimonial-card">
+          <div class="rating-stars">★★★★★</div>
+          <p class="testimonial-text">
+            "Marcus Thorne’s biodynamic wine pairings showed an instinctive mastery. Every glass told the authentic story of its hillside terroir."
+          </p>
+          <div class="reviewer-profile">
+            <div class="reviewer-avatar">FW</div>
+            <div>
+              <div class="reviewer-name">Food & Wine Magazine</div>
+              <div class="reviewer-tag">Top 10 US Brasseries</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Quick Reservation CTA Banner -->
+  <section class="section-spacing" style="background-color: var(--bg-surface-alt); border-top: 1px solid var(--border-light); border-bottom: 1px solid var(--border-light);">
+    <div class="container" style="text-align: center; max-width: 760px;">
+      <span class="eyebrow">Your Table Awaits</span>
+      <h2 style="margin-bottom: 1rem;">Experience L'AURA This Week</h2>
+      <p style="margin-bottom: 2rem; font-size: 1.15rem;">
+        Reservations open 30 days in advance. For parties of six or more or private glasshouse buyouts, please contact our concierge directly.
+      </p>
+      <div style="display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap;">
+        <a href="/reservations" class="btn btn-primary btn-lg">Reserve Your Table Online</a>
+        <a href="/contact" class="btn btn-outline btn-lg">Private Events & Inquiries</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tasting Order Drawer (Slide-In) -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-label="Tasting Order Drawer">
+    <div class="drawer-header">
+      <div>
+        <h3 style="font-size: 1.35rem; margin-bottom: 0.15rem;">Your Tasting Order</h3>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Curated selections for your visit</span>
+      </div>
+      <button class="modal-close-btn" id="drawerCloseBtn" aria-label="Close drawer">✕</button>
+    </div>
+    <div class="drawer-items" id="drawerItemsContainer">
+      <!-- Items dynamically populated via CartState -->
+    </div>
+    <div class="drawer-footer">
+      <div class="drawer-total-row">
+        <span>Tasting Total</span>
+        <span id="drawerTotalAmount" style="color: var(--accent-terracotta);">$0.00</span>
+      </div>
+      <a href="/reservations" class="btn btn-primary" style="width: 100%; margin-bottom: 0.75rem;">
+        Book Table with Tasting Selection
+      </a>
+      <p style="font-size: 0.75rem; text-align: center; color: var(--text-muted);">
+        Your curated items will be noted for your dining party upon arrival.
+      </p>
+    </div>
+  </aside>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top-grid">
+        <div class="footer-brand">
+          <div class="brand-logo" style="margin-bottom: 1rem;">
+            <div class="brand-monogram">L</div>
+            <div class="brand-text">
+              <span class="brand-name">L'AURA</span>
+              <span class="brand-subtitle">Brasserie & Botanicals</span>
+            </div>
+          </div>
+          <p>
+            An award-winning Michelin two-star culinary destination committed to seasonal farm partnerships, wood-fired hearth cooking, and thoughtful hospitality.
+          </p>
+          <div style="font-size: 0.875rem; color: var(--text-secondary);">
+            <strong>Concierge:</strong> +1 (415) 555-0198<br>
+            <strong>Inquiries:</strong> concierge@laurarestaurant.com
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/menu">Full Dining Menu</a></li>
+            <li><a href="/about">Our Story & Farm Partners</a></li>
+            <li><a href="/reservations">Book a Table Online</a></li>
+            <li><a href="/contact">Location & Hours</a></li>
+            <li><a href="/contact#faq">Frequently Asked Questions</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Service Hours</h4>
+          <div class="footer-hours-row">
+            <span>Tuesday – Thursday</span>
+            <span>5:00 PM – 10:30 PM</span>
+          </div>
+          <div class="footer-hours-row">
+            <span>Friday & Saturday</span>
+            <span>12:00 PM – 11:00 PM</span>
+          </div>
+          <div class="footer-hours-row">
+            <span>Sunday (Botanical Brunch)</span>
+            <span>11:30 AM – 9:30 PM</span>
+          </div>
+          <div class="footer-hours-row" style="color: var(--text-muted);">
+            <span>Monday</span>
+            <span>Closed (Harvest Day)</span>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Cellar Notes & Harvest News</h4>
+          <p style="font-size: 0.85rem; margin-bottom: 0.75rem;">
+            Join our private circle to receive seasonal tasting menu releases, winemaker dinner invitations, and botanical cocktail recipes.
+          </p>
+          <form class="newsletter-form" id="newsletterForm">
+            <input type="email" class="newsletter-input" placeholder="Your email address..." required>
+            <button type="submit" class="btn btn-primary btn-sm">Join</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          © 2026 L'AURA Culinary Hospitality Group. All rights reserved. 428 Heritage Way, San Francisco, CA.
+        </div>
+        <div style="display: flex; gap: 1.5rem;">
+          <a href="/contact">Privacy Policy</a>
+          <a href="/contact">Accessibility</a>
+          <a href="/reservations">Corkage & Dress Code</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+</body>
+</html>

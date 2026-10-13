@@ -1,0 +1,47 @@
+[
+  {
+    "id": "RES-5810",
+    "name": "Amelia Wright",
+    "email": "amelia@example.com",
+    "phone": "4155551234",
+    "experience": "garden-conservatory",
+    "experienceName": "Glasshouse Garden Conservatory",
+    "date": "2026-10-25",
+    "time": "19:30",
+    "guests": 2,
+    "occasion": "Dining Experience",
+    "notes": "",
+    "status": "Confirmed",
+    "createdAt": "2026-10-13T17:36:35.698Z"
+  },
+  {
+    "id": "RES-8841",
+    "name": "Sophia Montgomery",
+    "email": "sophia.m@example.com",
+    "phone": "+1 (415) 555-0142",
+    "experience": "garden-conservatory",
+    "experienceName": "Glasshouse Garden Conservatory",
+    "date": "2026-10-18",
+    "time": "19:30",
+    "guests": 4,
+    "occasion": "Anniversary Dinner",
+    "notes": "Table near citrus trees if possible. Gluten-free guest in party.",
+    "status": "Confirmed",
+    "createdAt": "2026-10-12T14:20:00.000Z"
+  },
+  {
+    "id": "RES-9204",
+    "name": "Dr. Julian Hayes",
+    "email": "julian.hayes@example.com",
+    "phone": "+1 (415) 555-0188",
+    "experience": "chefs-counter",
+    "experienceName": "Chef Eleanor Vance's Counter",
+    "date": "2026-10-20",
+    "time": "20:00",
+    "guests": 2,
+    "occasion": "Culinary Tasting",
+    "notes": "First time dining at L'Aura. Would love sommelier pairing recommendations.",
+    "status": "Confirmed",
+    "createdAt": "2026-10-13T09:15:00.000Z"
+  }
+]

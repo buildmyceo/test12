@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dining Menu | L'AURA Artisanal Brasserie</title>
+  <meta name="description" content="Explore our seasonal tasting menu, handmade pastas, wood-fired hearth mains, and botanical cocktails curated by Chef Eleanor Vance.">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238F4F2E'/><text x='50%' y='65%' font-family='serif' font-size='56' fill='%23FAF8F5' text-anchor='middle'>L</text></svg>">
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <div class="top-bar-left">
+        <span class="top-bar-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          428 Heritage Way, Historic Quarter, San Francisco
+        </span>
+        <span class="top-bar-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Dinner Service: 5:00 PM – 11:00 PM
+        </span>
+      </div>
+      <div class="top-bar-right">
+        <div id="liveStatusBadge" class="live-badge open">
+          <span class="status-dot"></span>
+          <span>Checking Restaurant Hours...</span>
+        </div>
+        <a href="tel:+14155550198" style="font-weight: 600; color: var(--accent-terracotta);">+1 (415) 555-0198</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Site Navigation -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="/" class="brand-logo" aria-label="L'AURA Homepage">
+        <div class="brand-monogram">L</div>
+        <div class="brand-text">
+          <span class="brand-name">L'AURA</span>
+          <span class="brand-subtitle">Brasserie & Botanicals</span>
+        </div>
+      </a>
+
+      <nav class="nav-links" id="navLinks" aria-label="Main Navigation">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/menu" class="nav-link active">Dining Menu</a>
+        <a href="/about" class="nav-link">Our Story</a>
+        <a href="/reservations" class="nav-link">Reservations</a>
+        <a href="/contact" class="nav-link">Contact & Location</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="cart-toggle-btn" aria-label="View Tasting Order">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-count-badge" style="display: none;">0</span>
+        </button>
+        <a href="/reservations" class="btn btn-primary btn-sm">Reserve a Table</a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Page Header -->
+  <section class="section-spacing" style="padding-bottom: 2rem;">
+    <div class="container">
+      <div class="section-header" style="margin-bottom: 2rem;">
+        <span class="eyebrow">Autumn Harvest 2026</span>
+        <h1>The Dining Menu</h1>
+        <p>
+          Every dish is prepared to order using produce harvested that same morning from our trusted partner farms across Sonoma, Petaluma, and Point Reyes.
+        </p>
+      </div>
+
+      <!-- Seven-Course Prix Fixe Feature Banner -->
+      <div style="background-color: var(--bg-surface); border: 1px solid var(--border-medium); border-left: 5px solid var(--accent-terracotta); border-radius: var(--radius-md); padding: 2rem; margin-bottom: 3rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 1.5rem;">
+        <div style="max-width: 720px;">
+          <div style="display: flex; gap: 0.5rem; align-items: center; margin-bottom: 0.5rem;">
+            <span class="badge badge-terracotta">Chef's Table Experience</span>
+            <span class="badge badge-sage">Nightly Seating</span>
+          </div>
+          <h3 style="font-size: 1.5rem; margin-bottom: 0.35rem;">7-Course Seasonal Chef's Tasting Experience</h3>
+          <p style="font-size: 0.95rem; margin-bottom: 0;">
+            A sensory culinary voyage guided by Chef Eleanor Vance. Features rare sea harvests, hand-rolled pasta, wood-fired cuts, and pastry creations. Optional sommelier reserve wine flight.
+          </p>
+        </div>
+        <div style="text-align: right;">
+          <div style="font-family: var(--font-serif); font-size: 2rem; font-weight: 700; color: var(--accent-terracotta); line-height: 1;">$175</div>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 0.75rem;">per guest • Wine pairing +$95</div>
+          <a href="/reservations" class="btn btn-primary btn-sm">Reserve Tasting Menu</a>
+        </div>
+      </div>
+
+      <!-- Interactive Menu Controls (Search + Categories + Dietary) -->
+      <div class="menu-controls">
+        <!-- Search Input -->
+        <div class="menu-search-wrapper">
+          <svg class="menu-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+          <input type="text" id="menuSearchInput" class="menu-search-input" placeholder="Search by dish name, ingredient (e.g. truffle, saffron, sea bass)...">
+        </div>
+
+        <!-- Category Nav -->
+        <div class="category-nav">
+          <button class="category-btn active" data-category="all">Full Tasting Menu</button>
+          <button class="category-btn" data-category="starters">Starters & Crudo</button>
+          <button class="category-btn" data-category="pasta">Handmade Pastas</button>
+          <button class="category-btn" data-category="mains">Artisanal Mains</button>
+          <button class="category-btn" data-category="desserts">Pastry & Desserts</button>
+          <button class="category-btn" data-category="drinks">Botanical Cellar & Cocktails</button>
+        </div>
+
+        <!-- Dietary Chips -->
+        <div class="dietary-filters">
+          <span class="dietary-filter-label">Filter by Diet:</span>
+          <button class="filter-chip active" data-dietary="all">All Options</button>
+          <button class="filter-chip" data-dietary="Vegetarian">Vegetarian</button>
+          <button class="filter-chip" data-dietary="Gluten-Free">Gluten-Free</button>
+          <button class="filter-chip" data-dietary="Chef's Signature">Chef's Signature</button>
+        </div>
+      </div>
+
+      <!-- Item Counter -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
+        <span id="menuItemCount" style="font-size: 0.9rem; font-weight: 600; color: var(--text-secondary);">Loading dishes...</span>
+        <span style="font-size: 0.85rem; color: var(--text-muted);">Click any dish for sommelier pairings & allergens</span>
+      </div>
+
+      <!-- Menu Grid -->
+      <div class="dishes-grid" id="menuGridContainer">
+        <!-- Populated via public/js/menu.js from /api/menu -->
+      </div>
+    </div>
+  </section>
+
+  <!-- Dish Detail Modal -->
+  <div class="modal-overlay" id="dishModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 style="font-size: 1.25rem;">Culinary Details</h3>
+        <button class="modal-close-btn" id="dishModalClose" aria-label="Close modal">✕</button>
+      </div>
+      <div class="modal-body" id="dishModalDetails">
+        <!-- Injected via JavaScript -->
+      </div>
+    </div>
+  </div>
+
+  <!-- Tasting Order Drawer (Slide-In) -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-label="Tasting Order Drawer">
+    <div class="drawer-header">
+      <div>
+        <h3 style="font-size: 1.35rem; margin-bottom: 0.15rem;">Your Tasting Order</h3>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Curated selections for your visit</span>
+      </div>
+      <button class="modal-close-btn" id="drawerCloseBtn" aria-label="Close drawer">✕</button>
+    </div>
+    <div class="drawer-items" id="drawerItemsContainer">
+      <!-- Items dynamically populated via CartState -->
+    </div>
+    <div class="drawer-footer">
+      <div class="drawer-total-row">
+        <span>Tasting Total</span>
+        <span id="drawerTotalAmount" style="color: var(--accent-terracotta);">$0.00</span>
+      </div>
+      <a href="/reservations" class="btn btn-primary" style="width: 100%; margin-bottom: 0.75rem;">
+        Book Table with Tasting Selection
+      </a>
+      <p style="font-size: 0.75rem; text-align: center; color: var(--text-muted);">
+        Your curated items will be noted for your dining party upon arrival.
+      </p>
+    </div>
+  </aside>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top-grid">
+        <div class="footer-brand">
+          <div class="brand-logo" style="margin-bottom: 1rem;">
+            <div class="brand-monogram">L</div>
+            <div class="brand-text">
+              <span class="brand-name">L'AURA</span>
+              <span class="brand-subtitle">Brasserie & Botanicals</span>
+            </div>
+          </div>
+          <p>
+            An award-winning Michelin two-star culinary destination committed to seasonal farm partnerships, wood-fired hearth cooking, and thoughtful hospitality.
+          </p>
+          <div style="font-size: 0.875rem; color: var(--text-secondary);">
+            <strong>Concierge:</strong> +1 (415) 555-0198<br>
+            <strong>Inquiries:</strong> concierge@laurarestaurant.com
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/menu">Full Dining Menu</a></li>
+            <li><a href="/about">Our Story & Farm Partners</a></li>
+            <li><a href="/reservations">Book a Table Online</a></li>
+            <li><a href="/contact">Location & Hours</a></li>
+            <li><a href="/contact#faq">Frequently Asked Questions</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Service Hours</h4>
+          <div class="footer-hours-row">
+            <span>Tuesday – Thursday</span>
+            <span>5:00 PM – 10:30 PM</span>
+          </div>
+          <div class="footer-hours-row">
+            <span>Friday & Saturday</span>
+            <span>12:00 PM – 11:00 PM</span>
+          </div>
+          <div class="footer-hours-row">
+            <span>Sunday (Botanical Brunch)</span>
+            <span>11:30 AM – 9:30 PM</span>
+          </div>
+          <div class="footer-hours-row" style="color: var(--text-muted);">
+            <span>Monday</span>
+            <span>Closed (Harvest Day)</span>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Cellar Notes & Harvest News</h4>
+          <p style="font-size: 0.85rem; margin-bottom: 0.75rem;">
+            Join our private circle to receive seasonal tasting menu releases, winemaker dinner invitations, and botanical cocktail recipes.
+          </p>
+          <form class="newsletter-form" id="newsletterForm">
+            <input type="email" class="newsletter-input" placeholder="Your email address..." required>
+            <button type="submit" class="btn btn-primary btn-sm">Join</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          © 2026 L'AURA Culinary Hospitality Group. All rights reserved. 428 Heritage Way, San Francisco, CA.
+        </div>
+        <div style="display: flex; gap: 1.5rem;">
+          <a href="/contact">Dietary Accommodations</a>
+          <a href="/contact">Allergen Protocol</a>
+          <a href="/reservations">Corkage Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/menu.js"></script>
+</body>
+</html>

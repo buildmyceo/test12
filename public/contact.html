@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Contact, Location & Private Events | L'AURA</title>
+  <meta name="description" content="Find our address, hours, valet information, and submit private dining and event buyout inquiries at L'AURA in San Francisco.">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238F4F2E'/><text x='50%' y='65%' font-family='serif' font-size='56' fill='%23FAF8F5' text-anchor='middle'>L</text></svg>">
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <div class="top-bar-left">
+        <span class="top-bar-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          428 Heritage Way, Historic Quarter, San Francisco
+        </span>
+        <span class="top-bar-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Dinner Service: 5:00 PM – 11:00 PM
+        </span>
+      </div>
+      <div class="top-bar-right">
+        <div id="liveStatusBadge" class="live-badge open">
+          <span class="status-dot"></span>
+          <span>Checking Restaurant Hours...</span>
+        </div>
+        <a href="tel:+14155550198" style="font-weight: 600; color: var(--accent-terracotta);">+1 (415) 555-0198</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Site Navigation -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="/" class="brand-logo" aria-label="L'AURA Homepage">
+        <div class="brand-monogram">L</div>
+        <div class="brand-text">
+          <span class="brand-name">L'AURA</span>
+          <span class="brand-subtitle">Brasserie & Botanicals</span>
+        </div>
+      </a>
+
+      <nav class="nav-links" id="navLinks" aria-label="Main Navigation">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/menu" class="nav-link">Dining Menu</a>
+        <a href="/about" class="nav-link">Our Story</a>
+        <a href="/reservations" class="nav-link">Reservations</a>
+        <a href="/contact" class="nav-link active">Contact & Location</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="cart-toggle-btn" aria-label="View Tasting Order">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-count-badge" style="display: none;">0</span>
+        </button>
+        <a href="/reservations" class="btn btn-primary btn-sm">Reserve a Table</a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Contact & Location Header -->
+  <section class="section-spacing" style="padding-bottom: 2rem;">
+    <div class="container">
+      <div class="section-header" style="max-width: 760px; margin-bottom: 3.5rem;">
+        <span class="eyebrow">Connect & Visit</span>
+        <h1>Location, Events & Concierge</h1>
+        <p>
+          We are nestled along tree-lined Heritage Way in the Historic Quarter. Whether planning an intimate dinner or a full private buyout, our team is at your service.
+        </p>
+      </div>
+
+      <!-- Split Layout: Information & Map vs Contact Form -->
+      <div class="split-feature" style="align-items: flex-start; gap: 3.5rem; margin-bottom: 5rem;">
+        <!-- Left Column: Location, Vector Map & Contacts -->
+        <div>
+          <!-- Address & Valet Card -->
+          <div class="card" style="padding: 2rem; margin-bottom: 2rem;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 1rem;">
+              <div>
+                <span class="badge badge-terracotta" style="margin-bottom: 0.5rem;">San Francisco Flagship</span>
+                <h3 style="font-size: 1.45rem;">428 Heritage Way</h3>
+                <p style="font-size: 0.95rem; color: var(--text-secondary); margin-bottom: 0;">
+                  Historic Quarter, San Francisco, CA 94108
+                </p>
+              </div>
+              <button id="copyAddressBtn" class="btn btn-outline btn-sm" title="Copy Address">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                <span>Copy</span>
+              </button>
+            </div>
+
+            <!-- Stylized Crisp Vector Map (Solid Colors Only) -->
+            <div style="background-color: var(--bg-surface-alt); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 1.5rem; margin: 1.5rem 0; position: relative;">
+              <svg viewBox="0 0 500 240" style="width: 100%; height: auto; display: block;" aria-label="Stylized neighborhood street map of L'AURA">
+                <!-- Solid background grid -->
+                <rect width="500" height="240" fill="#F4EFEA"/>
+                
+                <!-- Streets (Solid crisp ivory roads) -->
+                <rect x="0" y="90" width="500" height="42" fill="#FFFFFF" stroke="#ECE5DC" stroke-width="1.5"/>
+                <rect x="180" y="0" width="46" height="240" fill="#FFFFFF" stroke="#ECE5DC" stroke-width="1.5"/>
+                <rect x="360" y="0" width="36" height="240" fill="#FFFFFF" stroke="#ECE5DC" stroke-width="1.5"/>
+
+                <!-- Street Labels -->
+                <text x="20" y="115" font-family="'Plus Jakarta Sans', sans-serif" font-size="11" font-weight="600" fill="#848078" letter-spacing="1">HERITAGE WAY</text>
+                <text x="195" y="30" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="600" fill="#848078" transform="rotate(90 195,30)">MONTGOMERY ST</text>
+                <text x="375" y="30" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="600" fill="#848078" transform="rotate(90 375,30)">SANSOME ST</text>
+
+                <!-- City Blocks (Subtle solid pale stone) -->
+                <rect x="20" y="20" width="145" height="58" rx="4" fill="#EFEAE2" stroke="#DDD4C7"/>
+                <rect x="20" y="145" width="145" height="75" rx="4" fill="#EFEAE2" stroke="#DDD4C7"/>
+                <rect x="240" y="145" width="105" height="75" rx="4" fill="#EFEAE2" stroke="#DDD4C7"/>
+                <rect x="410" y="20" width="70" height="58" rx="4" fill="#EFEAE2" stroke="#DDD4C7"/>
+                <rect x="410" y="145" width="70" height="75" rx="4" fill="#EFEAE2" stroke="#DDD4C7"/>
+
+                <!-- L'AURA Building Highlight (Solid Terracotta & Sage) -->
+                <rect x="240" y="20" width="105" height="58" rx="4" fill="#FFFFFF" stroke="#8F4F2E" stroke-width="2"/>
+                <rect x="240" y="20" width="105" height="12" rx="2" fill="#8F4F2E"/>
+                <text x="292" y="52" font-family="'Cormorant Garamond', Georgia, serif" font-size="14" font-weight="700" fill="#1E1E1C" text-anchor="middle">L'AURA</text>
+                <text x="292" y="66" font-family="'Plus Jakarta Sans', sans-serif" font-size="8" font-weight="600" fill="#8F4F2E" text-anchor="middle">★ RESTAURANT & GLASSHOUSE</text>
+
+                <!-- Valet Marker Pin -->
+                <circle cx="292" cy="108" r="8" fill="#8F4F2E"/>
+                <circle cx="292" cy="108" r="3" fill="#FFFFFF"/>
+                <text x="306" y="112" font-family="'Plus Jakarta Sans', sans-serif" font-size="10" font-weight="700" fill="#8F4F2E">VALET STAND</text>
+              </svg>
+            </div>
+
+            <div style="font-size: 0.9rem; line-height: 1.6; color: var(--text-secondary);">
+              <strong>Complimentary Valet:</strong> Available curbside directly in front of the restaurant entrance on Heritage Way Tuesday through Sunday starting at 4:30 PM.<br>
+              <strong>Public Transit:</strong> Montgomery Street Station (BART & Muni Metro) is a pleasant 4-minute walk through the historic promenade.
+            </div>
+          </div>
+
+          <!-- Direct Department Contacts -->
+          <div class="card" style="padding: 2rem;">
+            <h3 style="font-size: 1.25rem; margin-bottom: 1.25rem;">Direct Inquiries</h3>
+            <div style="display: flex; flex-direction: column; gap: 1rem; font-size: 0.92rem;">
+              <div style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-light);">
+                <div style="font-weight: 600; color: var(--text-primary);">Table Reservations & Host Stand</div>
+                <div style="color: var(--text-secondary);">+1 (415) 555-0198 • concierge@laurarestaurant.com</div>
+              </div>
+
+              <div style="padding-bottom: 0.75rem; border-bottom: 1px solid var(--border-light);">
+                <div style="font-weight: 600; color: var(--text-primary);">Private Dining & Glasshouse Buyouts</div>
+                <div style="color: var(--text-secondary);">events@laurarestaurant.com (Attn: Chloe Martinez)</div>
+              </div>
+
+              <div>
+                <div style="font-weight: 600; color: var(--text-primary);">Cellar Acquisitions & Sommelier Press</div>
+                <div style="color: var(--text-secondary);">cellar@laurarestaurant.com (Attn: Marcus Thorne)</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right Column: Contact & Private Events Form -->
+        <div>
+          <div class="card" style="padding: 2.5rem;">
+            <span class="eyebrow">Direct Message</span>
+            <h2 style="font-size: 1.85rem; margin-bottom: 0.5rem;">Inquire with Our Concierge</h2>
+            <p style="font-size: 0.95rem; margin-bottom: 2rem;">
+              Please complete the form below. For private dining celebrations or glasshouse buyouts, our event coordinator will reply with curated menus within 24 hours.
+            </p>
+
+            <form id="contactForm">
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="contactName">Your Name *</label>
+                  <input type="text" id="contactName" class="form-control" placeholder="Alexandra Hayes" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="contactEmail">Email Address *</label>
+                  <input type="email" id="contactEmail" class="form-control" placeholder="alexandra@example.com" required>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="contactPhone">Phone Number</label>
+                  <input type="tel" id="contactPhone" class="form-control" placeholder="+1 (415) 555-0198">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="contactEventType">Nature of Inquiry</label>
+                  <select id="contactEventType" class="form-control">
+                    <option value="General Dining Inquiry">General Dining Inquiry</option>
+                    <option value="Private Glasshouse Event">Private Glasshouse Event (8–16 guests)</option>
+                    <option value="Full Restaurant Buyout">Full Restaurant Buyout (up to 90 guests)</option>
+                    <option value="Wine Cellar Consultation">Wine Cellar Consultation</option>
+                    <option value="Dietary or Allergen Inquiry">Dietary or Allergen Inquiry</option>
+                    <option value="Media & Press Inquiry">Media & Press Inquiry</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-row">
+                <div class="form-group">
+                  <label class="form-label" for="contactGuestCount">Estimated Guest Count (If Event)</label>
+                  <input type="number" id="contactGuestCount" class="form-control" placeholder="e.g. 12" min="1" max="120">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" for="contactDate">Target Date of Event</label>
+                  <input type="date" id="contactDate" class="form-control">
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label" for="contactMessage">How can we assist you? *</label>
+                <textarea id="contactMessage" class="form-control" placeholder="Please provide any details about your event, preferred timing, dietary notes, or questions..." required></textarea>
+              </div>
+
+              <button type="submit" class="btn btn-primary btn-lg" style="width: 100%;">
+                Send Concierge Message
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <!-- Interactive FAQ Accordion -->
+      <div id="faq" style="max-width: 860px; margin: 0 auto;">
+        <div class="section-header" style="margin-bottom: 2.5rem;">
+          <span class="eyebrow eyebrow-sage">Common Questions</span>
+          <h2>Frequently Asked Questions</h2>
+          <p>Everything you need to know before visiting our dining room.</p>
+        </div>
+
+        <div class="accordion-item active">
+          <button class="accordion-trigger" type="button">
+            <span>How far in advance do reservations open?</span>
+            <span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-content">
+            Reservations are released rolling 30 days in advance at 9:00 AM PST on our website. For full restaurant buyouts or events larger than 12 guests, inquiries may be scheduled up to 6 months in advance through our events concierge.
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-trigger" type="button">
+            <span>Can you accommodate severe allergies or vegetarian/vegan diets?</span>
+            <span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-content">
+            Yes, gladly. We take allergies and dietary needs with the highest seriousness. We offer a dedicated vegetarian tasting menu and can tailor courses for gluten-free, dairy-free, and nut allergies when noted during booking or at least 24 hours prior to service.
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-trigger" type="button">
+            <span>Can I host a wedding reception or private dinner in the Glasshouse?</span>
+            <span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-content">
+            Yes! The Glasshouse Garden Conservatory accommodates seated dining for up to 16 guests for private luncheons and evening gatherings. For larger celebrations, the entire brasserie and conservatory can be reserved for buyouts of up to 90 seated guests.
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-trigger" type="button">
+            <span>What is your corkage fee policy?</span>
+            <span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-content">
+            We allow up to two 750ml bottles per party for wines not currently represented on our cellar list. The corkage fee is $50 per bottle, and is courteously waived for each bottle purchased from our wine list during your visit.
+          </div>
+        </div>
+
+        <div class="accordion-item">
+          <button class="accordion-trigger" type="button">
+            <span>Do you accommodate walk-in guests without reservations?</span>
+            <span class="accordion-icon">+</span>
+          </button>
+          <div class="accordion-content">
+            Yes! Our 12-seat Botanical Marble Bar and lounge area are reserved exclusively for walk-in guests each evening on a first-come, first-served basis. Full dining menu and botanical cocktail pairings are served at the bar.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tasting Order Drawer (Slide-In) -->
+  <div class="drawer-overlay" id="drawerOverlay"></div>
+  <aside class="cart-drawer" id="cartDrawer" aria-label="Tasting Order Drawer">
+    <div class="drawer-header">
+      <div>
+        <h3 style="font-size: 1.35rem; margin-bottom: 0.15rem;">Your Tasting Order</h3>
+        <span style="font-size: 0.8rem; color: var(--text-muted);">Curated selections for your visit</span>
+      </div>
+      <button class="modal-close-btn" id="drawerCloseBtn" aria-label="Close drawer">✕</button>
+    </div>
+    <div class="drawer-items" id="drawerItemsContainer">
+      <!-- Items dynamically populated via CartState -->
+    </div>
+    <div class="drawer-footer">
+      <div class="drawer-total-row">
+        <span>Tasting Total</span>
+        <span id="drawerTotalAmount" style="color: var(--accent-terracotta);">$0.00</span>
+      </div>
+      <a href="/reservations" class="btn btn-primary" style="width: 100%; margin-bottom: 0.75rem;">
+        Book Table with Tasting Selection
+      </a>
+      <p style="font-size: 0.75rem; text-align: center; color: var(--text-muted);">
+        Your curated items will be noted for your dining party upon arrival.
+      </p>
+    </div>
+  </aside>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top-grid">
+        <div class="footer-brand">
+          <div class="brand-logo" style="margin-bottom: 1rem;">
+            <div class="brand-monogram">L</div>
+            <div class="brand-text">
+              <span class="brand-name">L'AURA</span>
+              <span class="brand-subtitle">Brasserie & Botanicals</span>
+            </div>
+          </div>
+          <p>
+            An award-winning Michelin two-star culinary destination committed to seasonal farm partnerships, wood-fired hearth cooking, and thoughtful hospitality.
+          </p>
+          <div style="font-size: 0.875rem; color: var(--text-secondary);">
+            <strong>Concierge:</strong> +1 (415) 555-0198<br>
+            <strong>Inquiries:</strong> concierge@laurarestaurant.com
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Navigation</h4>
+          <ul class="footer-links">
+            <li><a href="/">Home</a></li>
+            <li><a href="/menu">Full Dining Menu</a></li>
+            <li><a href="/about">Our Story & Farm Partners</a></li>
+            <li><a href="/reservations">Book a Table Online</a></li>
+            <li><a href="/contact">Location & Hours</a></li>
+            <li><a href="/contact#faq">Frequently Asked Questions</a></li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Service Hours</h4>
+          <div class="footer-hours-row">
+            <span>Tuesday – Thursday</span>
+            <span>5:00 PM – 10:30 PM</span>
+          </div>
+          <div class="footer-hours-row">
+            <span>Friday & Saturday</span>
+            <span>12:00 PM – 11:00 PM</span>
+          </div>
+          <div class="footer-hours-row">
+            <span>Sunday (Botanical Brunch)</span>
+            <span>11:30 AM – 9:30 PM</span>
+          </div>
+          <div class="footer-hours-row" style="color: var(--text-muted);">
+            <span>Monday</span>
+            <span>Closed (Harvest Day)</span>
+          </div>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Cellar Notes & Harvest News</h4>
+          <p style="font-size: 0.85rem; margin-bottom: 0.75rem;">
+            Join our private circle to receive seasonal tasting menu releases, winemaker dinner invitations, and botanical cocktail recipes.
+          </p>
+          <form class="newsletter-form" id="newsletterForm">
+            <input type="email" class="newsletter-input" placeholder="Your email address..." required>
+            <button type="submit" class="btn btn-primary btn-sm">Join</button>
+          </form>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          © 2026 L'AURA Culinary Hospitality Group. All rights reserved. 428 Heritage Way, San Francisco, CA.
+        </div>
+        <div style="display: flex; gap: 1.5rem;">
+          <a href="/contact">Valet Details</a>
+          <a href="/contact#faq">Private Buyouts</a>
+          <a href="/reservations">Reservations</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="/js/main.js"></script>
+  <script src="/js/contact.js"></script>
+</body>
+</html>

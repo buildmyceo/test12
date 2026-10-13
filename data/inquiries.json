@@ -1,0 +1,25 @@
+[
+  {
+    "id": "INQ-1116",
+    "name": "Lord Sterling",
+    "email": "sterling@example.com",
+    "phone": "",
+    "subject": "General Dining Inquiry",
+    "eventType": "General Inquiry",
+    "guestCount": null,
+    "targetDate": null,
+    "message": "Inquiring about private conservatory buyout for 16 guests.",
+    "createdAt": "2026-10-13T17:36:50.265Z"
+  },
+  {
+    "id": "INQ-1042",
+    "name": "Marcus Vance",
+    "email": "marcus@vancegroup.com",
+    "phone": "+1 (415) 555-0322",
+    "eventType": "Corporate Buyout",
+    "guestCount": 45,
+    "targetDate": "2026-11-15",
+    "message": "Looking to host our annual executive dinner in the Glasshouse Garden Conservatory.",
+    "createdAt": "2026-10-11T16:30:00.000Z"
+  }
+]
