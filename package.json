@@ -7,7 +7,15 @@
     "start": "node server.js",
     "dev": "node server.js"
   },
-  "keywords": ["restaurant", "gastronomy", "reservations", "fine-dining"],
+  "engines": {
+    "node": ">=18.x"
+  },
+  "keywords": [
+    "restaurant",
+    "gastronomy",
+    "reservations",
+    "fine-dining"
+  ],
   "author": "L'AURA Culinary Group",
   "license": "ISC",
   "dependencies": {

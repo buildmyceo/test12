@@ -5,15 +5,50 @@ const cors = require('cors');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+const isVercel = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
 app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// Paths
+// --- RESILIENT DATA MANAGEMENT FOR LOCAL AND SERVERLESS (VERCEL) ---
+
+// Pre-load default seed data for resilience in serverless environments
+let defaultMenu = { categories: [], items: [], experiences: [] };
+let defaultReservations = [];
+let defaultInquiries = [];
+
+try {
+  defaultMenu = require('./data/menu.json');
+} catch (e) {
+  console.warn('Warning: Could not pre-require menu.json:', e.message);
+}
+
+try {
+  defaultReservations = require('./data/reservations.json');
+} catch (e) {
+  console.warn('Warning: Could not pre-require reservations.json:', e.message);
+}
+
+try {
+  defaultInquiries = require('./data/inquiries.json');
+} catch (e) {
+  console.warn('Warning: Could not pre-require inquiries.json:', e.message);
+}
+
+// On Vercel serverless, root filesystem is read-only; use /tmp for writes.
+// On local dev, persist to the project data/ directory.
 const MENU_PATH = path.join(__dirname, 'data', 'menu.json');
-const RESERVATIONS_PATH = path.join(__dirname, 'data', 'reservations.json');
-const INQUIRIES_PATH = path.join(__dirname, 'data', 'inquiries.json');
+const RESERVATIONS_PATH = isVercel
+  ? path.join('/tmp', 'reservations.json')
+  : path.join(__dirname, 'data', 'reservations.json');
+const INQUIRIES_PATH = isVercel
+  ? path.join('/tmp', 'inquiries.json')
+  : path.join(__dirname, 'data', 'inquiries.json');
+
+// In-memory runtime caches
+let memoryReservations = null;
+let memoryInquiries = null;
 
 // Helper to read JSON safely
 const readJSON = (filePath, fallback = []) => {
@@ -22,7 +57,7 @@ const readJSON = (filePath, fallback = []) => {
     const content = fs.readFileSync(filePath, 'utf-8');
     return JSON.parse(content);
   } catch (err) {
-    console.error(`Error reading ${filePath}:`, err);
+    console.warn(`Error reading ${filePath}:`, err.message);
     return fallback;
   }
 };
@@ -30,25 +65,82 @@ const readJSON = (filePath, fallback = []) => {
 // Helper to write JSON safely
 const writeJSON = (filePath, data) => {
   try {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
     fs.writeFileSync(filePath, JSON.stringify(data, null, 2), 'utf-8');
     return true;
   } catch (err) {
-    console.error(`Error writing ${filePath}:`, err);
+    console.warn(`Notice: Unable to write to disk (${err.message}). State maintained in memory.`);
     return false;
   }
 };
 
-// --- API ROUTES ---
+const getReservations = () => {
+  if (memoryReservations) return memoryReservations;
+  if (fs.existsSync(RESERVATIONS_PATH)) {
+    memoryReservations = readJSON(RESERVATIONS_PATH, defaultReservations);
+  } else {
+    memoryReservations = JSON.parse(JSON.stringify(defaultReservations));
+  }
+  return memoryReservations;
+};
+
+const saveReservations = (data) => {
+  memoryReservations = data;
+  writeJSON(RESERVATIONS_PATH, data);
+};
+
+const getInquiries = () => {
+  if (memoryInquiries) return memoryInquiries;
+  if (fs.existsSync(INQUIRIES_PATH)) {
+    memoryInquiries = readJSON(INQUIRIES_PATH, defaultInquiries);
+  } else {
+    memoryInquiries = JSON.parse(JSON.stringify(defaultInquiries));
+  }
+  return memoryInquiries;
+};
+
+const saveInquiries = (data) => {
+  memoryInquiries = data;
+  writeJSON(INQUIRIES_PATH, data);
+};
+
+// --- API ROUTER ---
+const apiRouter = express.Router();
+
+// Root API Health / Info
+apiRouter.get('/', (req, res) => {
+  res.json({
+    status: 'online',
+    restaurant: "L'AURA Artisanal Modern Brasserie",
+    environment: isVercel ? 'vercel-serverless' : 'local-node',
+    endpoints: [
+      '/api/menu',
+      '/api/menu/:id',
+      '/api/reservations',
+      '/api/reservations/:id',
+      '/api/contact',
+      '/api/newsletter',
+      '/api/status'
+    ]
+  });
+});
 
 // GET /api/menu
-app.get('/api/menu', (req, res) => {
-  const menuData = readJSON(MENU_PATH, { categories: [], items: [], experiences: [] });
+apiRouter.get('/menu', (req, res) => {
+  const menuData = fs.existsSync(MENU_PATH)
+    ? readJSON(MENU_PATH, defaultMenu)
+    : defaultMenu;
   res.json(menuData);
 });
 
 // GET /api/menu/:id
-app.get('/api/menu/:id', (req, res) => {
-  const menuData = readJSON(MENU_PATH, { items: [] });
+apiRouter.get('/menu/:id', (req, res) => {
+  const menuData = fs.existsSync(MENU_PATH)
+    ? readJSON(MENU_PATH, defaultMenu)
+    : defaultMenu;
   const item = (menuData.items || []).find((i) => i.id === req.params.id);
   if (!item) {
     return res.status(404).json({ error: 'Menu item not found' });
@@ -57,15 +149,14 @@ app.get('/api/menu/:id', (req, res) => {
 });
 
 // GET /api/reservations
-app.get('/api/reservations', (req, res) => {
-  const reservations = readJSON(RESERVATIONS_PATH, []);
-  res.json(reservations);
+apiRouter.get('/reservations', (req, res) => {
+  res.json(getReservations());
 });
 
 // GET /api/reservations/:id
-app.get('/api/reservations/:id', (req, res) => {
-  const code = req.params.id.toUpperCase().trim();
-  const reservations = readJSON(RESERVATIONS_PATH, []);
+apiRouter.get('/reservations/:id', (req, res) => {
+  const code = (req.params.id || '').toUpperCase().trim();
+  const reservations = getReservations();
   const found = reservations.find((r) => r.id.toUpperCase() === code);
   if (!found) {
     return res.status(404).json({ error: `Reservation ${code} not found.` });
@@ -74,14 +165,14 @@ app.get('/api/reservations/:id', (req, res) => {
 });
 
 // POST /api/reservations
-app.post('/api/reservations', (req, res) => {
+apiRouter.post('/reservations', (req, res) => {
   const { name, email, phone, experience, experienceName, date, time, guests, occasion, notes } = req.body;
 
   if (!name || !email || !date || !time || !guests) {
     return res.status(400).json({ error: 'Please provide name, email, date, time, and guest count.' });
   }
 
-  const reservations = readJSON(RESERVATIONS_PATH, []);
+  const reservations = getReservations();
   const randomNum = Math.floor(1000 + Math.random() * 9000);
   const newReservation = {
     id: `RES-${randomNum}`,
@@ -100,19 +191,19 @@ app.post('/api/reservations', (req, res) => {
   };
 
   reservations.unshift(newReservation);
-  writeJSON(RESERVATIONS_PATH, reservations);
+  saveReservations(reservations);
 
   res.status(201).json({
     success: true,
-    message: 'Your table has been reserved at L\'AURA.',
+    message: "Your table has been reserved at L'AURA.",
     reservation: newReservation
   });
 });
 
 // DELETE /api/reservations/:id
-app.delete('/api/reservations/:id', (req, res) => {
-  const code = req.params.id.toUpperCase().trim();
-  let reservations = readJSON(RESERVATIONS_PATH, []);
+apiRouter.delete('/reservations/:id', (req, res) => {
+  const code = (req.params.id || '').toUpperCase().trim();
+  let reservations = getReservations();
   const initialLength = reservations.length;
   reservations = reservations.filter((r) => r.id.toUpperCase() !== code);
 
@@ -120,19 +211,19 @@ app.delete('/api/reservations/:id', (req, res) => {
     return res.status(404).json({ error: `Reservation ${code} could not be found to cancel.` });
   }
 
-  writeJSON(RESERVATIONS_PATH, reservations);
+  saveReservations(reservations);
   res.json({ success: true, message: `Reservation ${code} has been cancelled.` });
 });
 
 // POST /api/contact
-app.post('/api/contact', (req, res) => {
+apiRouter.post('/contact', (req, res) => {
   const { name, email, phone, subject, eventType, guestCount, targetDate, message } = req.body;
 
   if (!name || !email || !message) {
     return res.status(400).json({ error: 'Name, email, and message are required.' });
   }
 
-  const inquiries = readJSON(INQUIRIES_PATH, []);
+  const inquiries = getInquiries();
   const randomNum = Math.floor(1000 + Math.random() * 9000);
   const newInquiry = {
     id: `INQ-${randomNum}`,
@@ -148,29 +239,29 @@ app.post('/api/contact', (req, res) => {
   };
 
   inquiries.unshift(newInquiry);
-  writeJSON(INQUIRIES_PATH, inquiries);
+  saveInquiries(inquiries);
 
   res.status(201).json({
     success: true,
-    message: 'Thank you for reaching out to L\'AURA. Our concierge team will reply within 24 hours.',
+    message: "Thank you for reaching out to L'AURA. Our concierge team will reply within 24 hours.",
     inquiry: newInquiry
   });
 });
 
 // POST /api/newsletter
-app.post('/api/newsletter', (req, res) => {
+apiRouter.post('/newsletter', (req, res) => {
   const { email } = req.body;
   if (!email || !email.includes('@')) {
     return res.status(400).json({ error: 'Please enter a valid email address.' });
   }
   res.json({
     success: true,
-    message: 'Welcome to L\'AURA Cellar Notes. You will receive private tasting invitations and seasonal menus.'
+    message: "Welcome to L'AURA Cellar Notes. You will receive private tasting invitations and seasonal menus."
   });
 });
 
 // GET /api/status (Live restaurant status)
-app.get('/api/status', (req, res) => {
+apiRouter.get('/status', (req, res) => {
   const now = new Date();
   const day = now.getDay(); // 0 is Sunday, 1 is Monday
   const hours = now.getHours();
@@ -228,10 +319,18 @@ app.get('/api/status', (req, res) => {
   });
 });
 
-// Serve static assets
+// Mount API router under /api
+app.use('/api', apiRouter);
+
+// When deployed on Vercel, also allow apiRouter to handle requests routed directly
+if (isVercel) {
+  app.use(apiRouter);
+}
+
+// --- STATIC ASSETS & HTML PAGES (LOCAL DEVELOPMENT & FALLBACK) ---
 app.use(express.static(path.join(__dirname, 'public')));
 
-// HTML Page Routes with Clean URLs
+// Clean URL handlers for local server
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
@@ -252,11 +351,21 @@ app.get('/contact', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'contact.html'));
 });
 
-// Fallback for 404
+// 404 Fallback
 app.use((req, res) => {
-  res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
+  const notFoundPath = path.join(__dirname, 'public', '404.html');
+  if (fs.existsSync(notFoundPath)) {
+    res.status(404).sendFile(notFoundPath);
+  } else {
+    res.status(404).sendFile(path.join(__dirname, 'public', 'index.html'));
+  }
 });
 
-app.listen(PORT, () => {
-  console.log(`✨ L'AURA Restaurant Server running at http://localhost:${PORT}`);
-});
+// Conditionally start HTTP listener only when run directly (not when required by Vercel serverless)
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log(`✨ L'AURA Restaurant Server running at http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;
