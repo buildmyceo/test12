@@ -110,7 +110,7 @@ const saveInquiries = (data) => {
 // --- API ROUTER ---
 const apiRouter = express.Router();
 
-// Root API Health / Info
+// Root API Health / Info (GET /api)
 apiRouter.get('/', (req, res) => {
   res.json({
     status: 'online',
@@ -155,7 +155,7 @@ apiRouter.get('/reservations', (req, res) => {
 
 // GET /api/reservations/:id
 apiRouter.get('/reservations/:id', (req, res) => {
-  const code = (req.params.id || '').toUpperCase().trim();
+  const code = req.params.id.toUpperCase().trim();
   const reservations = getReservations();
   const found = reservations.find((r) => r.id.toUpperCase() === code);
   if (!found) {
@@ -202,7 +202,7 @@ apiRouter.post('/reservations', (req, res) => {
 
 // DELETE /api/reservations/:id
 apiRouter.delete('/reservations/:id', (req, res) => {
-  const code = (req.params.id || '').toUpperCase().trim();
+  const code = req.params.id.toUpperCase().trim();
   let reservations = getReservations();
   const initialLength = reservations.length;
   reservations = reservations.filter((r) => r.id.toUpperCase() !== code);
@@ -319,19 +319,22 @@ apiRouter.get('/status', (req, res) => {
   });
 });
 
-// Mount API router under /api
+// Mount API router strictly under /api (NEVER at the root '/')
 app.use('/api', apiRouter);
 
-// When deployed on Vercel, also allow apiRouter to handle requests routed directly
-if (isVercel) {
-  app.use(apiRouter);
-}
-
-// --- STATIC ASSETS & HTML PAGES (LOCAL DEVELOPMENT & FALLBACK) ---
+// --- STATIC ASSETS & HTML PAGES ---
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Clean URL handlers for local server
+// Clean URL page handlers
 app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/index', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+
+app.get('/index.html', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
