@@ -63,9 +63,16 @@ class SupabaseAuthManager {
       if (!error && session) {
         this.currentSession = session;
         this.currentUser = session.user;
+        this.unlockGate();
+      } else {
+        const hasUrlAuth = window.location.hash.includes('access_token=') || window.location.search.includes('code=');
+        if (!hasUrlAuth) {
+          this.lockGate();
+        }
       }
     } catch (err) {
       console.warn('Could not retrieve active Supabase session:', err);
+      this.lockGate();
     }
 
     // Listen to Auth State Changes
@@ -77,12 +84,14 @@ class SupabaseAuthManager {
       this.syncPageFields();
 
       if (event === 'SIGNED_IN') {
+        this.unlockGate();
         if (typeof showToast === 'function') {
           const name = this.getUserDisplayName();
-          showToast(`Welcome back, ${name}!`, 'success');
+          showToast(`Welcome back, ${name}! Access granted.`, 'success');
         }
         this.closeModal();
       } else if (event === 'SIGNED_OUT') {
+        this.lockGate();
         if (typeof showToast === 'function') {
           showToast('You have been signed out.', 'info');
         }
@@ -102,10 +111,20 @@ class SupabaseAuthManager {
 
     // Inject Auth UI and Modal into DOM
     const setupDOM = () => {
+      this.injectSiteGate();
       this.injectModalHTML();
       this.injectNavbarButtons();
       this.updateNavbarUI();
       this.syncPageFields();
+
+      if (this.currentUser) {
+        this.unlockGate();
+      } else {
+        const hasUrlAuth = window.location.hash.includes('access_token=') || window.location.search.includes('code=');
+        if (!hasUrlAuth) {
+          this.lockGate();
+        }
+      }
     };
 
     if (document.readyState === 'loading') {
@@ -270,6 +289,7 @@ class SupabaseAuthManager {
     this.currentUser = null;
     this.currentSession = null;
     this.updateNavbarUI();
+    this.lockGate();
   }
 
   // --- HELPERS ---
@@ -301,6 +321,174 @@ class SupabaseAuthManager {
       return (parts[0][0] + parts[1][0]).toUpperCase();
     }
     return name.slice(0, 2).toUpperCase();
+  }
+
+  // --- MANDATORY ACCESS GATE (Google/Gmail Lock) ---
+
+  lockGate() {
+    document.documentElement.classList.add('gate-locked');
+    if (document.body) {
+      document.body.classList.add('gate-locked');
+    }
+    const gate = document.getElementById('siteAuthGate');
+    if (gate) {
+      gate.classList.remove('gate-unlocked');
+    }
+  }
+
+  unlockGate() {
+    document.documentElement.classList.remove('gate-locked');
+    if (document.body) {
+      document.body.classList.remove('gate-locked');
+    }
+    const gate = document.getElementById('siteAuthGate');
+    if (gate) {
+      gate.classList.add('gate-unlocked');
+    }
+  }
+
+  injectSiteGate() {
+    if (document.getElementById('siteAuthGate')) {
+      this.bindGateEvents();
+      return;
+    }
+
+    const gate = document.createElement('div');
+    gate.id = 'siteAuthGate';
+    gate.className = 'site-auth-gate';
+    gate.setAttribute('aria-modal', 'true');
+    gate.setAttribute('role', 'dialog');
+    gate.setAttribute('aria-label', 'Private Dining Member Access');
+
+    gate.innerHTML = `
+      <div class="gate-card">
+        <div class="gate-monogram">L</div>
+        <div class="gate-brand-title">L'AURA</div>
+        <div class="gate-brand-sub">Brasserie &amp; Botanicals • San Francisco</div>
+
+        <div class="gate-badge-row">
+          <span class="gate-badge">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+            Private Guest Verification
+          </span>
+        </div>
+
+        <h2 class="gate-heading">Sign In with Google to Enter</h2>
+        <p class="gate-desc">
+          Welcome to L'AURA. Our dining menus, cellar reserve, and table reservations are reserved for verified guests. Please sign in with your Google / Gmail account to enter the website.
+        </p>
+
+        <!-- Alert Box -->
+        <div class="auth-alert" id="gateAlertBox" style="display: none;"></div>
+
+        <!-- Google 1-Click Sign-In Button -->
+        <button type="button" class="gate-google-btn" id="gateGoogleLoginBtn">
+          <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
+            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+          </svg>
+          <span>Continue with Google (Gmail)</span>
+        </button>
+
+        <div class="auth-divider">
+          <span>or sign in with email</span>
+        </div>
+
+        <button type="button" class="gate-toggle-email-btn" id="gateToggleEmailBtn">
+          Need to sign in with email OTP instead? Click here
+        </button>
+
+        <div class="gate-email-box" id="gateEmailBox" style="display: none;">
+          <form id="gateEmailForm">
+            <div class="form-group" style="margin-bottom: 0.75rem;">
+              <label class="form-label" for="gateEmailInput" style="font-size: 0.8rem;">Enter your Gmail or Email</label>
+              <input type="email" id="gateEmailInput" class="form-control" placeholder="name@gmail.com" required autocomplete="email">
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm" id="gateEmailSubmitBtn" style="width: 100%; justify-content: center;">
+              Send Sign-In Code
+            </button>
+          </form>
+        </div>
+
+        <div class="gate-footer-security">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+          <span>Secured by Google OAuth &amp; Supabase</span>
+        </div>
+      </div>
+    `;
+
+    document.body.prepend(gate);
+    this.bindGateEvents();
+  }
+
+  bindGateEvents() {
+    const googleBtn = document.getElementById('gateGoogleLoginBtn');
+    const alertBox = document.getElementById('gateAlertBox');
+    const toggleEmailBtn = document.getElementById('gateToggleEmailBtn');
+    const emailBox = document.getElementById('gateEmailBox');
+    const emailForm = document.getElementById('gateEmailForm');
+
+    if (toggleEmailBtn && emailBox) {
+      toggleEmailBtn.addEventListener('click', () => {
+        const isHidden = emailBox.style.display === 'none';
+        emailBox.style.display = isHidden ? 'block' : 'none';
+        toggleEmailBtn.textContent = isHidden ? 'Hide email sign-in' : 'Need to sign in with email OTP instead? Click here';
+      });
+    }
+
+    if (googleBtn) {
+      googleBtn.addEventListener('click', async () => {
+        this.setButtonLoading(googleBtn, true, 'Connecting to Google...');
+        if (alertBox) alertBox.style.display = 'none';
+        try {
+          await this.signInWithGoogle();
+        } catch (err) {
+          console.error('Gate Google login error:', err);
+          let msg = err.message || 'Failed to initialize Google login.';
+          if (msg.includes('provider is not enabled') || msg.includes('Unsupported provider')) {
+            msg = 'Google login is not enabled in your Supabase dashboard.';
+          }
+          if (alertBox) {
+            alertBox.textContent = msg;
+            alertBox.className = 'auth-alert error';
+            alertBox.style.display = 'block';
+          }
+          this.setButtonLoading(googleBtn, false, 'Continue with Google (Gmail)');
+        }
+      });
+    }
+
+    if (emailForm) {
+      emailForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const emailInput = document.getElementById('gateEmailInput');
+        const submitBtn = document.getElementById('gateEmailSubmitBtn');
+        const email = emailInput?.value?.trim();
+        if (!email) return;
+
+        this.setButtonLoading(submitBtn, true, 'Sending...');
+        if (alertBox) alertBox.style.display = 'none';
+        try {
+          await this.sendOtp(email);
+          this.openModal('otp');
+          if (alertBox) {
+            alertBox.textContent = '6-digit code sent to ' + email + '. Complete verification to unlock access.';
+            alertBox.className = 'auth-alert success';
+            alertBox.style.display = 'block';
+          }
+        } catch (err) {
+          if (alertBox) {
+            alertBox.textContent = err.message || 'Failed to send code.';
+            alertBox.className = 'auth-alert error';
+            alertBox.style.display = 'block';
+          }
+        } finally {
+          this.setButtonLoading(submitBtn, false, 'Send Sign-In Code');
+        }
+      });
+    }
   }
 
   // --- DOM INJECTION & UI LOGIC ---

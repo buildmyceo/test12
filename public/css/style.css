@@ -2243,3 +2243,205 @@ textarea.form-control {
   }
 }
 
+/* ==========================================================================
+   MANDATORY SITE-WIDE AUTH GATE (Google/Gmail Sign-In Wall)
+   ========================================================================== */
+
+html.gate-locked body,
+body.gate-locked {
+  overflow: hidden !important;
+  height: 100vh !important;
+}
+
+html.gate-locked body > *:not(#siteAuthGate):not(#toastContainer),
+body.gate-locked > *:not(#siteAuthGate):not(#toastContainer) {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  user-select: none !important;
+}
+
+#siteAuthGate {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: 9999999;
+  background-color: var(--bg-primary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  overflow-y: auto;
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
+}
+
+#siteAuthGate.gate-unlocked {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+.gate-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  box-shadow: 0 12px 48px rgba(30, 30, 28, 0.09);
+  max-width: 480px;
+  width: 100%;
+  padding: 2.5rem 2.25rem;
+  text-align: center;
+  position: relative;
+  animation: gateCardPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes gateCardPop {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.gate-monogram {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background-color: var(--accent-terracotta);
+  color: #FAF8F5;
+  font-family: var(--font-serif);
+  font-size: 2rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.85rem auto;
+  box-shadow: 0 4px 12px rgba(143, 79, 46, 0.2);
+}
+
+.gate-brand-title {
+  font-family: var(--font-serif);
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  color: var(--text-primary);
+}
+
+.gate-brand-sub {
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--text-muted);
+  margin-top: 0.25rem;
+}
+
+.gate-badge-row {
+  margin: 1.25rem 0 0.85rem 0;
+  display: flex;
+  justify-content: center;
+}
+
+.gate-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background-color: var(--bg-surface-alt);
+  color: var(--accent-terracotta);
+  border: 1px solid var(--border-medium);
+  padding: 0.35rem 0.85rem;
+  border-radius: 50px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+}
+
+.gate-heading {
+  font-family: var(--font-serif);
+  font-size: 1.55rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.6rem;
+  line-height: 1.25;
+}
+
+.gate-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+}
+
+.gate-google-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  padding: 0.95rem 1.25rem;
+  background-color: var(--bg-surface);
+  border: 1.5px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: var(--transition);
+  box-shadow: 0 1px 3px rgba(30, 30, 28, 0.06);
+}
+
+.gate-google-btn:hover {
+  background-color: var(--bg-surface-alt);
+  border-color: var(--accent-terracotta);
+  box-shadow: 0 4px 14px rgba(143, 79, 46, 0.15);
+  transform: translateY(-1px);
+}
+
+.gate-google-btn:active {
+  transform: translateY(0);
+}
+
+.gate-toggle-email-btn {
+  background: none;
+  border: none;
+  color: var(--accent-terracotta);
+  font-size: 0.825rem;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.35rem 0.5rem;
+  font-family: var(--font-sans);
+  margin-top: 0.25rem;
+}
+
+.gate-toggle-email-btn:hover {
+  color: var(--accent-terracotta-hover);
+}
+
+.gate-email-box {
+  margin-top: 1rem;
+  padding: 1rem;
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-sm);
+  text-align: left;
+}
+
+.gate-footer-security {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+}
+
+
