@@ -144,6 +144,80 @@ function initReservationForm() {
       }
     });
   }
+
+  // Handle Logged-in User Bookings
+  const quickBar = document.getElementById('userReservationsQuickBar');
+  const loggedInEmailSpan = document.getElementById('resLoggedInEmail');
+  const loadMyResBtn = document.getElementById('btnLoadMyReservations');
+
+  function checkUserAuth() {
+    const user = window.authManager?.currentUser;
+    if (user && quickBar && loggedInEmailSpan) {
+      quickBar.style.display = 'flex';
+      loggedInEmailSpan.textContent = user.email || '';
+    } else if (quickBar) {
+      quickBar.style.display = 'none';
+    }
+  }
+
+  setTimeout(checkUserAuth, 350);
+  if (window.authManager?.client) {
+    window.authManager.client.auth.onAuthStateChange(() => {
+      checkUserAuth();
+    });
+  }
+
+  if (loadMyResBtn) {
+    loadMyResBtn.addEventListener('click', async () => {
+      const user = window.authManager?.currentUser;
+      if (!user || !user.email) {
+        if (typeof showToast === 'function') showToast('Please sign in to view your bookings', 'info');
+        return;
+      }
+      const resultArea = document.getElementById('lookupResultArea');
+      resultArea.innerHTML = '<p style="font-size: 0.9rem; color: var(--text-muted); margin-top: 1rem;">Searching your dining bookings...</p>';
+      try {
+        const res = await fetch('/api/reservations');
+        const allRes = await res.json();
+        const userRes = (allRes || []).filter(r => r.email && r.email.toLowerCase() === user.email.toLowerCase());
+        if (userRes.length === 0) {
+          resultArea.innerHTML = `
+            <div style="padding: 1.25rem; background-color: var(--bg-surface-alt); border-radius: var(--radius-sm); border: 1px solid var(--border-light); margin-top: 1rem; text-align: center;">
+              <p style="font-size: 0.95rem; margin-bottom: 0.25rem; font-weight: 600;">No Bookings Found</p>
+              <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.75rem;">You do not have any active reservations under <strong>${user.email}</strong> yet.</p>
+              <a href="#reservationForm" class="btn btn-primary btn-sm">Reserve Your First Table Above</a>
+            </div>
+          `;
+        } else {
+          resultArea.innerHTML = `
+            <div style="margin-top: 1.25rem;">
+              <div style="font-size: 0.9rem; font-weight: 600; margin-bottom: 0.75rem; color: var(--accent-terracotta);">Found ${userRes.length} Booking${userRes.length > 1 ? 's' : ''} for ${user.email}:</div>
+              ${userRes.map(data => `
+                <div class="confirmation-ticket" style="margin-bottom: 1rem;">
+                  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                    <span class="badge badge-sage">${data.status || 'Confirmed'}</span>
+                    <span style="font-family: var(--font-serif); font-size: 1.2rem; font-weight: 700;">${data.id}</span>
+                  </div>
+                  <div class="ticket-row"><span class="ticket-label">Guest</span><span class="ticket-value">${data.name}</span></div>
+                  <div class="ticket-row"><span class="ticket-label">Experience</span><span class="ticket-value">${data.experienceName}</span></div>
+                  <div class="ticket-row"><span class="ticket-label">Date & Time</span><span class="ticket-value">${data.date} at ${data.time}</span></div>
+                  <div class="ticket-row"><span class="ticket-label">Party Size</span><span class="ticket-value">${data.guests} Guests</span></div>
+                  ${data.notes ? `<div class="ticket-row"><span class="ticket-label">Special Notes</span><span class="ticket-value">${data.notes}</span></div>` : ''}
+                  
+                  <div style="display: flex; gap: 0.75rem; margin-top: 1rem;">
+                    <button class="btn btn-outline btn-sm" onclick="cancelReservation('${data.id}')" style="color: var(--status-closed); border-color: #F2D2D0;">Cancel Booking</button>
+                    <button class="btn btn-secondary btn-sm" onclick="downloadCalendarFile('${data.id}', '${data.date}', '${data.time}', '${data.experienceName}')">Download .ICS</button>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          `;
+        }
+      } catch (err) {
+        resultArea.innerHTML = '<p style="color: var(--status-closed); font-size: 0.9rem; margin-top: 0.75rem;">Unable to load your bookings.</p>';
+      }
+    });
+  }
 }
 
 async function cancelReservation(code) {

@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In & Guest Portal | L'AURA Artisanal Brasserie</title>
+  <meta name="description" content="Sign in to your L'AURA guest profile. Access table reservations, curated tasting menus, sommelier cellar notes, and private event bookings.">
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%238F4F2E'/><text x='50%' y='65%' font-family='serif' font-size='56' fill='%23FAF8F5' text-anchor='middle'>L</text></svg>">
+  <style>
+    .auth-page-wrapper {
+      padding: 4rem 0 6rem 0;
+      background-color: var(--bg-primary);
+    }
+    .auth-page-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 3.5rem;
+      align-items: center;
+      max-width: 1040px;
+      margin: 0 auto;
+    }
+    .auth-card-embedded {
+      background-color: var(--bg-surface);
+      border: 1px solid var(--border-medium);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-lg);
+      padding: 2.5rem;
+    }
+    .auth-perks-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+      margin-top: 2rem;
+    }
+    .auth-perk-item {
+      display: flex;
+      gap: 1rem;
+      align-items: flex-start;
+    }
+    .auth-perk-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-md);
+      background-color: var(--accent-terracotta-light);
+      color: var(--accent-terracotta);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .auth-perk-content h4 {
+      font-size: 1.05rem;
+      margin-bottom: 0.2rem;
+    }
+    .auth-perk-content p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin: 0;
+      line-height: 1.4;
+    }
+    @media (max-width: 860px) {
+      .auth-page-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+      }
+      .auth-page-wrapper {
+        padding: 2rem 0 4rem 0;
+      }
+      .auth-card-embedded {
+        padding: 1.75rem 1.25rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Announcement Bar -->
+  <div class="top-bar">
+    <div class="container top-bar-inner">
+      <div class="top-bar-left">
+        <span class="top-bar-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+          428 Heritage Way, Historic Quarter, San Francisco
+        </span>
+        <span class="top-bar-item">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+          Dinner Service: 5:00 PM – 11:00 PM
+        </span>
+      </div>
+      <div class="top-bar-right">
+        <div id="liveStatusBadge" class="live-badge open">
+          <span class="status-dot"></span>
+          <span>Checking Restaurant Hours...</span>
+        </div>
+        <a href="tel:+14155550198" style="font-weight: 600; color: var(--accent-terracotta);">+1 (415) 555-0198</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main Site Navigation -->
+  <header class="site-header">
+    <div class="container nav-container">
+      <a href="/" class="brand-logo" aria-label="L'AURA Homepage">
+        <div class="brand-monogram">L</div>
+        <div class="brand-text">
+          <span class="brand-name">L'AURA</span>
+          <span class="brand-subtitle">Brasserie & Botanicals</span>
+        </div>
+      </a>
+
+      <nav class="nav-links" id="navLinks" aria-label="Main Navigation">
+        <a href="/" class="nav-link">Home</a>
+        <a href="/menu" class="nav-link">Dining Menu</a>
+        <a href="/about" class="nav-link">Our Story</a>
+        <a href="/reservations" class="nav-link">Reservations</a>
+        <a href="/contact" class="nav-link">Contact & Location</a>
+      </nav>
+
+      <div class="header-actions">
+        <button class="cart-toggle-btn" aria-label="View Tasting Order">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="21" r="1"></circle><circle cx="20" cy="21" r="1"></circle><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path></svg>
+          <span class="cart-count-badge" style="display: none;">0</span>
+        </button>
+        <a href="/reservations" class="btn btn-primary btn-sm">Reserve a Table</a>
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Login Section -->
+  <main class="auth-page-wrapper">
+    <div class="container">
+      <div class="auth-page-grid">
+        
+        <!-- Left: Brand Experience & Perks -->
+        <div>
+          <span class="eyebrow">Guest Portal & Reservations</span>
+          <h1 style="font-size: 2.75rem; line-height: 1.15; margin-bottom: 1.25rem;">
+            A Personalized <span>Culinary Haven</span> Awaits.
+          </h1>
+          <p style="font-size: 1.05rem; color: var(--text-secondary); line-height: 1.6;">
+            Sign in to effortlessly manage your table reservations, review your curated tasting menu dishes, and receive private invitations to seasonal winemaker dinners.
+          </p>
+
+          <div class="auth-perks-list">
+            <div class="auth-perk-item">
+              <div class="auth-perk-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="18" y2="10"></line></svg>
+              </div>
+              <div class="auth-perk-content">
+                <h4>Instant Reservation Management</h4>
+                <p>View upcoming dining bookings, download .ICS calendar passes, or adjust dietary preferences with one click.</p>
+              </div>
+            </div>
+
+            <div class="auth-perk-item">
+              <div class="auth-perk-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"></path></svg>
+              </div>
+              <div class="auth-perk-content">
+                <h4>Priority Table Allocation</h4>
+                <p>Verified guests receive priority release windows for Chef Eleanor Vance’s 8-course seasonal tasting seatings.</p>
+              </div>
+            </div>
+
+            <div class="auth-perk-item">
+              <div class="auth-perk-icon">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+              </div>
+              <div class="auth-perk-content">
+                <h4>Passwordless Supabase Mail Auth</h4>
+                <p>Sign in instantly with a secure 6-digit code or magic link dispatched directly to your personal email inbox.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Right: Embedded Auth Card -->
+        <div>
+          <!-- Signed in state container (hidden by default) -->
+          <div id="pageLoggedInCard" class="auth-card-embedded" style="display: none; text-align: center;">
+            <div style="width: 64px; height: 64px; border-radius: 50%; background-color: var(--accent-terracotta-light); color: var(--accent-terracotta); font-size: 1.5rem; font-weight: 700; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.25rem auto;" id="pageUserAvatar">
+              CK
+            </div>
+            <h2 style="font-size: 1.85rem; margin-bottom: 0.35rem;" id="pageUserName">Welcome Back</h2>
+            <p style="color: var(--text-muted); font-size: 0.95rem; margin-bottom: 1.5rem;" id="pageUserEmail">user@example.com</p>
+            
+            <div style="display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.4rem 0.85rem; background-color: var(--status-open-bg); border: 1px solid #C3E6CB; border-radius: 999px; color: var(--status-open); font-size: 0.82rem; font-weight: 600; margin-bottom: 2rem;">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"></polyline></svg>
+              <span>Authenticated via Supabase</span>
+            </div>
+
+            <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+              <a href="/reservations" class="btn btn-primary" style="width: 100%;">Go to Reservations</a>
+              <a href="/menu" class="btn btn-outline" style="width: 100%;">Explore Dining Menu</a>
+              <button class="btn btn-sm" id="pageSignOutBtn" style="color: var(--status-closed); background: transparent; border: 1px solid #F5C6CB; margin-top: 0.5rem;">Sign Out of Account</button>
+            </div>
+          </div>
+
+          <!-- Auth Login Form Card -->
+          <div id="pageLoginFormCard" class="auth-card-embedded">
+            <div style="text-align: center; margin-bottom: 1.5rem;">
+              <div class="auth-monogram">L</div>
+              <h2 style="font-size: 1.75rem; margin-bottom: 0.25rem;">Sign In to L'AURA</h2>
+              <p style="font-size: 0.85rem; color: var(--text-muted);">Choose passwordless email code or password sign in below.</p>
+            </div>
+
+            <!-- Page Alert Box -->
+            <div class="auth-alert" id="pageAuthAlert" style="display: none;"></div>
+
+            <!-- Segmented Control Tabs -->
+            <div class="auth-tabs-nav">
+              <button class="auth-tab-btn active" id="btnPageTabOtp" onclick="switchPageAuthTab('otp')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                <span>Email Code</span>
+              </button>
+              <button class="auth-tab-btn" id="btnPageTabPwd" onclick="switchPageAuthTab('password')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                <span>Password</span>
+              </button>
+              <button class="auth-tab-btn" id="btnPageTabReg" onclick="switchPageAuthTab('signup')">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="8.5" cy="7" r="4"></circle><line x1="20" y1="8" x2="20" y2="14"></line><line x1="23" y1="11" x2="17" y2="11"></line></svg>
+                <span>Register</span>
+              </button>
+            </div>
+
+            <!-- TAB 1: OTP Email -->
+            <div id="pageTabContent-otp">
+              <form id="pageOtpRequestForm" class="auth-form">
+                <div class="form-group">
+                  <label for="pageOtpEmail">Your Email Address</label>
+                  <div class="input-with-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    <input type="email" id="pageOtpEmail" placeholder="guest@domain.com" required autocomplete="email">
+                  </div>
+                  <small class="form-hint">Dispatches an instant 6-digit confirmation code and magic link to your email.</small>
+                </div>
+                <button type="submit" class="btn btn-primary auth-submit-btn" id="pageOtpSendBtn">
+                  <span>Send Sign-In Code</span>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+                </button>
+              </form>
+
+              <!-- OTP Verify section in page -->
+              <div id="pageOtpVerifySection" style="display: none; margin-top: 1.5rem;">
+                <div class="otp-sent-banner">
+                  <div class="otp-sent-icon">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 2L11 13"></path><polygon points="22 2 15 22 11 13 2 9 22 2"></polygon></svg>
+                  </div>
+                  <div>
+                    <h4 style="margin: 0 0 0.2rem 0; font-size: 0.95rem;">Code Sent to Inbox</h4>
+                    <p style="margin: 0; font-size: 0.82rem; color: var(--text-muted);">
+                      Enter the 6-digit code sent to <strong id="pageTargetEmailDisplay"></strong>
+                    </p>
+                  </div>
+                </div>
+
+                <form id="pageOtpVerifyForm" class="auth-form" style="margin-top: 1.25rem;">
+                  <div class="form-group">
+                    <label for="pageOtpCode">6-Digit Login Code</label>
+                    <input type="text" id="pageOtpCode" class="otp-code-input" placeholder="• • • • • •" maxlength="6" inputmode="numeric" required>
+                  </div>
+                  <button type="submit" class="btn btn-primary auth-submit-btn" id="pageOtpConfirmBtn">
+                    <span>Verify Code & Sign In</span>
+                  </button>
+                </form>
+
+                <div class="otp-resend-row">
+                  <button type="button" class="text-link-btn" id="pageOtpResendBtn">Resend code</button>
+                  <span class="dot-divider">•</span>
+                  <button type="button" class="text-link-btn" id="pageOtpChangeEmailBtn">Use a different email</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- TAB 2: Password -->
+            <div id="pageTabContent-password" style="display: none;">
+              <form id="pagePwdLoginForm" class="auth-form">
+                <div class="form-group">
+                  <label for="pageLoginEmail">Email Address</label>
+                  <div class="input-with-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    <input type="email" id="pageLoginEmail" placeholder="guest@domain.com" required autocomplete="username">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <label for="pageLoginPwd">Password</label>
+                    <button type="button" class="text-link-btn" onclick="openForgotPwdFromPage()" style="font-size: 0.8rem;">Forgot password?</button>
+                  </div>
+                  <div class="input-with-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <input type="password" id="pageLoginPwd" placeholder="••••••••" required autocomplete="current-password">
+                    <button type="button" class="toggle-password-btn" data-target="pageLoginPwd" aria-label="Toggle password">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary auth-submit-btn" id="pageLoginBtn">
+                  <span>Sign In with Password</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- TAB 3: Register -->
+            <div id="pageTabContent-signup" style="display: none;">
+              <form id="pageSignupForm" class="auth-form">
+                <div class="form-group">
+                  <label for="pageRegName">Full Name</label>
+                  <div class="input-with-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <input type="text" id="pageRegName" placeholder="Eleanor Vance" required autocomplete="name">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="pageRegEmail">Email Address</label>
+                  <div class="input-with-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+                    <input type="email" id="pageRegEmail" placeholder="guest@domain.com" required autocomplete="email">
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label for="pageRegPwd">Create Password</label>
+                  <div class="input-with-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+                    <input type="password" id="pageRegPwd" placeholder="Minimum 6 characters" minlength="6" required autocomplete="new-password">
+                    <button type="button" class="toggle-password-btn" data-target="pageRegPwd" aria-label="Toggle password">
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </button>
+                  </div>
+                </div>
+
+                <button type="submit" class="btn btn-primary auth-submit-btn" id="pageRegBtn">
+                  <span>Create L'AURA Account</span>
+                </button>
+              </form>
+            </div>
+
+            <!-- Security Footer -->
+            <div class="auth-modal-footer">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
+              <span>Protected by Supabase Identity Services & SSL Encryption</span>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <!-- Site Footer -->
+  <footer class="site-footer">
+    <div class="container">
+      <div class="footer-top-grid">
+        <div>
+          <div class="footer-brand">
+            <span class="brand-monogram">L</span>
+            <span class="brand-name" style="font-size: 1.5rem;">L'AURA</span>
+          </div>
+          <p class="footer-tagline">
+            Artisanal Modern Brasserie, Hearth Cooking & Botanical Conservatory. Two Stars, Michelin Guide San Francisco 2024.
+          </p>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Reservations & Concierge</h4>
+          <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">428 Heritage Way, San Francisco, CA</p>
+          <p style="font-size: 0.9rem; margin-bottom: 0.5rem;">Concierge: +1 (415) 555-0198</p>
+          <p style="font-size: 0.9rem;">Email: concierge@laura-sf.com</p>
+        </div>
+
+        <div>
+          <h4 class="footer-heading">Dining Hours</h4>
+          <div class="footer-hours-row">
+            <span>Tue – Thu (Dinner)</span>
+            <span>5:00 PM – 10:30 PM</span>
+          </div>
+          <div class="footer-hours-row">
+            <span>Fri – Sat (Lunch & Dinner)</span>
+            <span>12:00 PM – 11:00 PM</span>
+          </div>
+          <div class="footer-hours-row">
+            <span>Sunday (Botanical Brunch)</span>
+            <span>11:30 AM – 9:30 PM</span>
+          </div>
+          <div class="footer-hours-row" style="color: var(--text-muted);">
+            <span>Monday</span>
+            <span>Closed (Harvest Day)</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-bottom">
+        <div>
+          © 2026 L'AURA Culinary Hospitality Group. All rights reserved. 428 Heritage Way, San Francisco, CA.
+        </div>
+        <div style="display: flex; gap: 1.5rem;">
+          <a href="/contact">Privacy Policy</a>
+          <a href="/contact">Accessibility</a>
+          <a href="/reservations">Corkage & Dress Code</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Core Scripts -->
+  <script src="/js/supabase.min.js"></script>
+  <script src="/js/main.js"></script>
+  <script src="/js/auth.js"></script>
+
+  <!-- Page-specific login script connecting with window.authManager -->
+  <script>
+    let activePageTab = 'otp';
+
+    function showPageAlert(msg, type = 'error') {
+      const alertBox = document.getElementById('pageAuthAlert');
+      if (!alertBox) return;
+      alertBox.className = `auth-alert ${type}`;
+      alertBox.textContent = msg;
+      alertBox.style.display = 'block';
+    }
+
+    function clearPageAlert() {
+      const alertBox = document.getElementById('pageAuthAlert');
+      if (alertBox) alertBox.style.display = 'none';
+    }
+
+    function switchPageAuthTab(tab) {
+      clearPageAlert();
+      activePageTab = tab;
+      const tabs = ['otp', 'password', 'signup'];
+      tabs.forEach((t) => {
+        const btn = document.getElementById(`btnPageTab${t.charAt(0).toUpperCase() + t.slice(1)}`);
+        const content = document.getElementById(`pageTabContent-${t}`);
+        if (btn) btn.classList.toggle('active', t === tab);
+        if (content) content.style.display = t === tab ? 'block' : 'none';
+      });
+    }
+
+    function openForgotPwdFromPage() {
+      if (window.authManager) {
+        window.authManager.openModal('recovery');
+      }
+    }
+
+    function syncPageUserState() {
+      const user = window.authManager?.currentUser;
+      const loginCard = document.getElementById('pageLoginFormCard');
+      const userCard = document.getElementById('pageLoggedInCard');
+
+      if (user && loginCard && userCard) {
+        loginCard.style.display = 'none';
+        userCard.style.display = 'block';
+        document.getElementById('pageUserAvatar').textContent = window.authManager.getUserInitials();
+        document.getElementById('pageUserName').textContent = `Welcome, ${window.authManager.getUserDisplayName()}`;
+        document.getElementById('pageUserEmail').textContent = user.email || '';
+      } else if (loginCard && userCard) {
+        loginCard.style.display = 'block';
+        userCard.style.display = 'none';
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      setTimeout(syncPageUserState, 200);
+
+      // Listen for auth change
+      if (window.authManager?.client) {
+        window.authManager.client.auth.onAuthStateChange(() => {
+          syncPageUserState();
+        });
+      }
+
+      // Page OTP Form Submit
+      const otpForm = document.getElementById('pageOtpRequestForm');
+      if (otpForm) {
+        otpForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const emailInput = document.getElementById('pageOtpEmail');
+          const btn = document.getElementById('pageOtpSendBtn');
+          clearPageAlert();
+          window.authManager.setButtonLoading(btn, true, 'Sending Code...');
+
+          try {
+            await window.authManager.sendMagicLink(emailInput.value);
+            document.getElementById('pageOtpRequestForm').style.display = 'none';
+            document.getElementById('pageOtpVerifySection').style.display = 'block';
+            document.getElementById('pageTargetEmailDisplay').textContent = emailInput.value;
+            showPageAlert('Login code and magic link dispatched to your email!', 'success');
+          } catch (err) {
+            showPageAlert(err.message || 'Failed to send login code. Please try again.', 'error');
+          } finally {
+            window.authManager.setButtonLoading(btn, false, 'Send Sign-In Code');
+          }
+        });
+      }
+
+      // Page OTP Verify Form Submit
+      const otpVerifyForm = document.getElementById('pageOtpVerifyForm');
+      if (otpVerifyForm) {
+        otpVerifyForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const codeInput = document.getElementById('pageOtpCode');
+          const btn = document.getElementById('pageOtpConfirmBtn');
+          clearPageAlert();
+          window.authManager.setButtonLoading(btn, true, 'Verifying...');
+
+          try {
+            await window.authManager.verifyOtpCode(window.authManager.otpPendingEmail, codeInput.value);
+            showPageAlert('Authentication successful! Welcome.', 'success');
+            setTimeout(syncPageUserState, 300);
+          } catch (err) {
+            showPageAlert(err.message || 'Invalid or expired code.', 'error');
+          } finally {
+            window.authManager.setButtonLoading(btn, false, 'Verify Code & Sign In');
+          }
+        });
+      }
+
+      // Page Password Login Submit
+      const pwdForm = document.getElementById('pagePwdLoginForm');
+      if (pwdForm) {
+        pwdForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const email = document.getElementById('pageLoginEmail').value;
+          const pwd = document.getElementById('pageLoginPwd').value;
+          const btn = document.getElementById('pageLoginBtn');
+          clearPageAlert();
+          window.authManager.setButtonLoading(btn, true, 'Signing In...');
+
+          try {
+            await window.authManager.signInWithPassword(email, pwd);
+            showPageAlert('Signed in successfully!', 'success');
+            setTimeout(syncPageUserState, 300);
+          } catch (err) {
+            showPageAlert(err.message || 'Invalid credentials.', 'error');
+          } finally {
+            window.authManager.setButtonLoading(btn, false, 'Sign In with Password');
+          }
+        });
+      }
+
+      // Page Signup Submit
+      const regForm = document.getElementById('pageSignupForm');
+      if (regForm) {
+        regForm.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const name = document.getElementById('pageRegName').value;
+          const email = document.getElementById('pageRegEmail').value;
+          const pwd = document.getElementById('pageRegPwd').value;
+          const btn = document.getElementById('pageRegBtn');
+          clearPageAlert();
+          window.authManager.setButtonLoading(btn, true, 'Registering...');
+
+          try {
+            const data = await window.authManager.signUp(email, pwd, name);
+            if (data?.session) {
+              showPageAlert('Account created successfully!', 'success');
+            } else {
+              showPageAlert(`Account created! A confirmation email was sent to ${email}. Please verify your email.`, 'success');
+            }
+            setTimeout(syncPageUserState, 400);
+          } catch (err) {
+            showPageAlert(err.message || 'Could not register account.', 'error');
+          } finally {
+            window.authManager.setButtonLoading(btn, false, 'Create L\'AURA Account');
+          }
+        });
+      }
+
+      // Page Sign Out
+      const signOutBtn = document.getElementById('pageSignOutBtn');
+      if (signOutBtn) {
+        signOutBtn.addEventListener('click', async () => {
+          await window.authManager.signOut();
+          syncPageUserState();
+        });
+      }
+
+      // Resend OTP
+      const resendBtn = document.getElementById('pageOtpResendBtn');
+      if (resendBtn) {
+        resendBtn.addEventListener('click', async () => {
+          try {
+            await window.authManager.sendMagicLink(window.authManager.otpPendingEmail);
+            showPageAlert('Fresh login code dispatched!', 'success');
+          } catch (err) {
+            showPageAlert(err.message || 'Error resending code.', 'error');
+          }
+        });
+      }
+
+      // Change email in page OTP
+      const changeEmailBtn = document.getElementById('pageOtpChangeEmailBtn');
+      if (changeEmailBtn) {
+        changeEmailBtn.addEventListener('click', () => {
+          document.getElementById('pageOtpRequestForm').style.display = 'block';
+          document.getElementById('pageOtpVerifySection').style.display = 'none';
+          clearPageAlert();
+        });
+      }
+    });
+  </script>
+</body>
+</html>

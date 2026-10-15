@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 const fs = require('fs');
@@ -117,6 +118,7 @@ apiRouter.get('/', (req, res) => {
     restaurant: "L'AURA Artisanal Modern Brasserie",
     environment: isVercel ? 'vercel-serverless' : 'local-node',
     endpoints: [
+      '/api/config',
       '/api/menu',
       '/api/menu/:id',
       '/api/reservations',
@@ -125,6 +127,17 @@ apiRouter.get('/', (req, res) => {
       '/api/newsletter',
       '/api/status'
     ]
+  });
+});
+
+// GET /api/config (Public client configuration supporting Vercel secret ANON_KEY)
+apiRouter.get('/config', (req, res) => {
+  const supabaseUrl = process.env.SUPABASE_URL || 'https://tzgpxjblmtyosrgjobju.supabase.co';
+  const anonKey = process.env.ANON_KEY || process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR6Z3B4amJsbXR5b3NyZ2pvYmp1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE5MDgwMTksImV4cCI6MjEwNzQ4NDAxOX0.tmLj6o_SLCLm9uLSMCI9-Gflu8kULn8VCFejPlDLUqE';
+
+  res.json({
+    supabaseUrl,
+    anonKey
   });
 });
 
@@ -352,6 +365,14 @@ app.get('/reservations', (req, res) => {
 
 app.get('/contact', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'contact.html'));
+});
+
+app.get('/login', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
+});
+
+app.get('/auth', (req, res) => {
+  res.sendFile(path.join(__dirname, 'public', 'login.html'));
 });
 
 // 404 Fallback
