@@ -18,6 +18,7 @@ app.use(express.urlencoded({ extended: true }));
 let defaultMenu = { categories: [], items: [], experiences: [] };
 let defaultReservations = [];
 let defaultInquiries = [];
+let defaultUserDetails = [];
 
 try {
   defaultMenu = require('./data/menu.json');
@@ -37,6 +38,12 @@ try {
   console.warn('Warning: Could not pre-require inquiries.json:', e.message);
 }
 
+try {
+  defaultUserDetails = require('./data/user_details.json');
+} catch (e) {
+  console.warn('Warning: Could not pre-require user_details.json:', e.message);
+}
+
 // On Vercel serverless, root filesystem is read-only; use /tmp for writes.
 // On local dev, persist to the project data/ directory.
 const MENU_PATH = path.join(__dirname, 'data', 'menu.json');
@@ -46,10 +53,14 @@ const RESERVATIONS_PATH = isVercel
 const INQUIRIES_PATH = isVercel
   ? path.join('/tmp', 'inquiries.json')
   : path.join(__dirname, 'data', 'inquiries.json');
+const USER_DETAILS_PATH = isVercel
+  ? path.join('/tmp', 'user_details.json')
+  : path.join(__dirname, 'data', 'user_details.json');
 
 // In-memory runtime caches
 let memoryReservations = null;
 let memoryInquiries = null;
+let memoryUserDetails = null;
 
 // Helper to read JSON safely
 const readJSON = (filePath, fallback = []) => {
@@ -108,6 +119,34 @@ const saveInquiries = (data) => {
   writeJSON(INQUIRIES_PATH, data);
 };
 
+const getUserDetails = () => {
+  if (memoryUserDetails) return memoryUserDetails;
+  if (fs.existsSync(USER_DETAILS_PATH)) {
+    memoryUserDetails = readJSON(USER_DETAILS_PATH, defaultUserDetails);
+  } else {
+    memoryUserDetails = JSON.parse(JSON.stringify(defaultUserDetails));
+  }
+  return memoryUserDetails;
+};
+
+const saveUserDetails = (data) => {
+  memoryUserDetails = data;
+  writeJSON(USER_DETAILS_PATH, data);
+};
+
+// Optional Supabase server-side client for real-time table synchronization
+let supabaseServer = null;
+try {
+  const { createClient } = require('@supabase/supabase-js');
+  const sbUrl = process.env.SUPABASE_URL || 'https://tzgpxjblmtyosrgjobju.supabase.co';
+  const sbKey = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.ANON_KEY || process.env.SUPABASE_ANON_KEY;
+  if (sbUrl && sbKey) {
+    supabaseServer = createClient(sbUrl, sbKey);
+  }
+} catch (e) {
+  console.warn('Notice: Supabase server client not initialized:', e.message);
+}
+
 // --- API ROUTER ---
 const apiRouter = express.Router();
 
@@ -119,6 +158,8 @@ apiRouter.get('/', (req, res) => {
     environment: isVercel ? 'vercel-serverless' : 'local-node',
     endpoints: [
       '/api/config',
+      '/api/user-details',
+      '/api/user-details/me',
       '/api/menu',
       '/api/menu/:id',
       '/api/reservations',
@@ -330,6 +371,162 @@ apiRouter.get('/status', (req, res) => {
     sommelierOnDuty: 'Marcus Thorne',
     executiveHeadChef: 'Eleanor Vance'
   });
+});
+
+// --- USER DETAILS / ONBOARDING PROFILE ENDPOINTS ---
+
+// POST /api/user-details (Record visitor/user location, name, phone, about-me)
+apiRouter.post('/user-details', async (req, res) => {
+  try {
+    const {
+      fullName,
+      name,
+      phone,
+      location,
+      latitude,
+      longitude,
+      locationAccuracy,
+      aboutMe,
+      about,
+      email,
+      userId
+    } = req.body;
+
+    const resolvedName = (fullName || name || '').trim();
+    const resolvedPhone = (phone || '').trim();
+    const resolvedLocation = (location || '').trim();
+    const resolvedAbout = (aboutMe || about || '').trim();
+    const resolvedEmail = (email || '').trim().toLowerCase();
+    const resolvedUserId = (userId || '').trim() || null;
+
+    if (!resolvedName) {
+      return res.status(400).json({ error: 'Please provide your full name.' });
+    }
+    if (!resolvedPhone) {
+      return res.status(400).json({ error: 'Please provide your phone number.' });
+    }
+    if (!resolvedLocation) {
+      return res.status(400).json({ error: 'Please provide or detect your current location.' });
+    }
+    if (!resolvedAbout) {
+      return res.status(400).json({ error: 'Please share a brief note about yourself or your dining preferences.' });
+    }
+
+    const records = getUserDetails();
+    const nowIso = new Date().toISOString();
+
+    // Check if a record already exists for this userId or email
+    const existingIndex = records.findIndex(r => {
+      if (resolvedUserId && r.user_id === resolvedUserId) return true;
+      if (resolvedEmail && r.email === resolvedEmail) return true;
+      return false;
+    });
+
+    const recordData = {
+      id: existingIndex >= 0 ? records[existingIndex].id : `usr_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+      user_id: resolvedUserId,
+      full_name: resolvedName,
+      phone: resolvedPhone,
+      email: resolvedEmail || null,
+      location: resolvedLocation,
+      latitude: latitude !== undefined && latitude !== null && !isNaN(parseFloat(latitude)) ? parseFloat(latitude) : null,
+      longitude: longitude !== undefined && longitude !== null && !isNaN(parseFloat(longitude)) ? parseFloat(longitude) : null,
+      location_accuracy: locationAccuracy !== undefined && locationAccuracy !== null && !isNaN(parseFloat(locationAccuracy)) ? parseFloat(locationAccuracy) : null,
+      about_me: resolvedAbout,
+      created_at: existingIndex >= 0 ? records[existingIndex].created_at : nowIso,
+      updated_at: nowIso
+    };
+
+    if (existingIndex >= 0) {
+      records[existingIndex] = recordData;
+    } else {
+      records.unshift(recordData);
+    }
+    saveUserDetails(records);
+
+    // Sync to Supabase user_details table if database connection is available
+    if (supabaseServer) {
+      try {
+        const payload = {
+          full_name: recordData.full_name,
+          phone: recordData.phone,
+          email: recordData.email,
+          location: recordData.location,
+          latitude: recordData.latitude,
+          longitude: recordData.longitude,
+          location_accuracy: recordData.location_accuracy,
+          about_me: recordData.about_me,
+          updated_at: recordData.updated_at
+        };
+        if (recordData.user_id) {
+          payload.user_id = recordData.user_id;
+        }
+
+        const { error: sbError } = await supabaseServer
+          .from('user_details')
+          .upsert(payload, { onConflict: recordData.user_id ? 'user_id' : undefined });
+
+        if (sbError) {
+          console.warn('Notice: Supabase user_details upsert bypassed:', sbError.message);
+        } else {
+          console.log(`[SUPABASE] Synced user_details for ${recordData.full_name}`);
+        }
+      } catch (sbErr) {
+        console.warn('Notice: Supabase sync exception:', sbErr.message);
+      }
+    }
+
+    console.log(`[USER_DETAILS] Recorded guest profile for: "${recordData.full_name}" (Location: ${recordData.location}, Phone: ${recordData.phone})`);
+
+    res.status(existingIndex >= 0 ? 200 : 201).json({
+      success: true,
+      message: 'Guest profile and details saved successfully.',
+      data: recordData
+    });
+  } catch (err) {
+    console.error('Error in /api/user-details:', err);
+    res.status(500).json({ error: 'Server error saving guest details: ' + err.message });
+  }
+});
+
+// GET /api/user-details (Fetch saved details list or query by user)
+apiRouter.get('/user-details', (req, res) => {
+  const { email, userId } = req.query;
+  const records = getUserDetails();
+
+  if (userId) {
+    const matched = records.find(r => r.user_id === userId);
+    return res.json(matched || null);
+  }
+  if (email) {
+    const cleanEmail = email.trim().toLowerCase();
+    const matched = records.find(r => r.email === cleanEmail);
+    return res.json(matched || null);
+  }
+
+  res.json(records);
+});
+
+// GET /api/user-details/me (Fetch current active profile)
+apiRouter.get('/user-details/me', (req, res) => {
+  const { email, userId } = req.query;
+  const records = getUserDetails();
+
+  if (!email && !userId) {
+    return res.status(400).json({ error: 'Provide either email or userId query parameter.' });
+  }
+
+  const found = records.find(r => {
+    if (userId && r.user_id === userId) return true;
+    if (email && r.email === email.trim().toLowerCase()) return true;
+    return false;
+  });
+
+  if (!found) {
+    return res.status(404).json({ exists: false, profile: null });
+  }
+
+  res.json({ exists: true, profile: found });
 });
 
 // Mount API router strictly under /api (NEVER at the root '/')

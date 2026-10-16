@@ -22,6 +22,8 @@ class SupabaseAuthManager {
     this.otpPendingEmail = '';
     this.resendTimer = null;
     this.resendSecondsLeft = 0;
+    this.userDetails = this.loadLocalUserDetails();
+    this.tempCoordinates = null;
     this.initPromise = this.init();
   }
 
@@ -63,20 +65,31 @@ class SupabaseAuthManager {
       if (!error && session) {
         this.currentSession = session;
         this.currentUser = session.user;
-        this.unlockGate();
+        await this.fetchRemoteUserDetails();
+        this.handleGateAccess();
       } else {
         const hasUrlAuth = window.location.hash.includes('access_token=') || window.location.search.includes('code=');
         if (!hasUrlAuth) {
-          this.lockGate();
+          if (this.hasCompletedUserDetails()) {
+            this.unlockGate();
+          } else {
+            this.lockGate();
+            this.showGateStep('auth');
+          }
         }
       }
     } catch (err) {
       console.warn('Could not retrieve active Supabase session:', err);
-      this.lockGate();
+      if (this.hasCompletedUserDetails()) {
+        this.unlockGate();
+      } else {
+        this.lockGate();
+        this.showGateStep('auth');
+      }
     }
 
     // Listen to Auth State Changes
-    this.client.auth.onAuthStateChange((event, session) => {
+    this.client.auth.onAuthStateChange(async (event, session) => {
       console.log('Supabase Auth Event:', event, session?.user?.email);
       this.currentSession = session;
       this.currentUser = session ? session.user : null;
@@ -84,14 +97,16 @@ class SupabaseAuthManager {
       this.syncPageFields();
 
       if (event === 'SIGNED_IN') {
-        this.unlockGate();
+        await this.fetchRemoteUserDetails();
+        this.handleGateAccess();
         if (typeof showToast === 'function') {
           const name = this.getUserDisplayName();
-          showToast(`Welcome back, ${name}! Access granted.`, 'success');
+          showToast(`Welcome back, ${name}!`, 'success');
         }
         this.closeModal();
       } else if (event === 'SIGNED_OUT') {
         this.lockGate();
+        this.showGateStep('auth');
         if (typeof showToast === 'function') {
           showToast('You have been signed out.', 'info');
         }
@@ -112,17 +127,23 @@ class SupabaseAuthManager {
     // Inject Auth UI and Modal into DOM
     const setupDOM = () => {
       this.injectSiteGate();
+      this.injectProfileModalHTML();
       this.injectModalHTML();
       this.injectNavbarButtons();
       this.updateNavbarUI();
       this.syncPageFields();
 
       if (this.currentUser) {
-        this.unlockGate();
+        this.handleGateAccess();
       } else {
         const hasUrlAuth = window.location.hash.includes('access_token=') || window.location.search.includes('code=');
         if (!hasUrlAuth) {
-          this.lockGate();
+          if (this.hasCompletedUserDetails()) {
+            this.unlockGate();
+          } else {
+            this.lockGate();
+            this.showGateStep('auth');
+          }
         }
       }
     };
@@ -323,7 +344,299 @@ class SupabaseAuthManager {
     return name.slice(0, 2).toUpperCase();
   }
 
-  // --- MANDATORY ACCESS GATE (Google/Gmail Lock) ---
+  // --- USER DETAILS & GUEST PROFILE DATA ---
+
+  loadLocalUserDetails() {
+    try {
+      const saved = localStorage.getItem('laura_user_details');
+      return saved ? JSON.parse(saved) : null;
+    } catch (_e) {
+      return null;
+    }
+  }
+
+  saveLocalUserDetails(data) {
+    try {
+      this.userDetails = data;
+      localStorage.setItem('laura_user_details', JSON.stringify(data));
+      this.syncPageFields();
+    } catch (_e) {}
+  }
+
+  hasCompletedUserDetails() {
+    if (!this.userDetails) return false;
+    const name = this.userDetails.full_name || this.userDetails.fullName;
+    const phone = this.userDetails.phone;
+    const location = this.userDetails.location;
+    const about = this.userDetails.about_me || this.userDetails.aboutMe;
+    return Boolean(name && phone && location && about);
+  }
+
+  async fetchRemoteUserDetails() {
+    if (this.hasCompletedUserDetails()) return;
+    try {
+      const email = this.currentUser?.email;
+      const userId = this.currentUser?.id;
+      if (!email && !userId) return;
+
+      const q = userId ? `userId=${encodeURIComponent(userId)}` : `email=${encodeURIComponent(email)}`;
+      const res = await fetch(`/api/user-details/me?${q}`);
+      if (res.ok) {
+        const data = await res.json();
+        if (data && data.exists && data.profile) {
+          this.saveLocalUserDetails(data.profile);
+        }
+      }
+    } catch (err) {
+      console.warn('Could not fetch remote user details:', err);
+    }
+  }
+
+  handleGateAccess() {
+    if (this.hasCompletedUserDetails()) {
+      this.unlockGate();
+    } else {
+      this.lockGate();
+      this.showGateStep('details');
+      this.populateGateUserDetails();
+    }
+  }
+
+  showGateStep(step) {
+    const stepAuth = document.getElementById('gateStepAuth');
+    const stepDetails = document.getElementById('gateStepDetails');
+    if (!stepAuth || !stepDetails) return;
+
+    if (step === 'details') {
+      stepAuth.classList.remove('active');
+      stepDetails.classList.add('active');
+      this.populateGateUserDetails();
+    } else {
+      stepDetails.classList.remove('active');
+      stepAuth.classList.add('active');
+    }
+  }
+
+  populateGateUserDetails() {
+    const nameInput = document.getElementById('gateFullNameInput');
+    const emailDisplay = document.getElementById('gateDetailsEmailDisplay');
+    const phoneInput = document.getElementById('gatePhoneInput');
+    const locationInput = document.getElementById('gateLocationInput');
+    const aboutInput = document.getElementById('gateAboutInput');
+
+    const defaultName = this.getUserDisplayName() !== 'Guest'
+      ? this.getUserDisplayName()
+      : (this.userDetails?.full_name || this.userDetails?.fullName || '');
+
+    if (nameInput && !nameInput.value) {
+      nameInput.value = defaultName;
+    }
+    if (emailDisplay) {
+      const email = this.currentUser?.email || this.userDetails?.email;
+      emailDisplay.textContent = email ? `Registered Account: ${email}` : 'Guest Visitor Entry';
+    }
+    if (phoneInput && !phoneInput.value && this.userDetails?.phone) {
+      phoneInput.value = this.userDetails.phone;
+    }
+    if (locationInput && !locationInput.value && this.userDetails?.location) {
+      locationInput.value = this.userDetails.location;
+    }
+    if (aboutInput && !aboutInput.value) {
+      aboutInput.value = this.userDetails?.about_me || this.userDetails?.aboutMe || '';
+    }
+  }
+
+  // --- GEOLOCATION DETECTION ---
+
+  async detectLocation(target = 'gate') {
+    const isGate = target === 'gate';
+    const locInput = document.getElementById(isGate ? 'gateLocationInput' : 'profileLocationInput');
+    const detectBtn = document.getElementById(isGate ? 'gateDetectLocationBtn' : 'profileDetectLocationBtn');
+    const statusBadge = document.getElementById(isGate ? 'gateLocationStatusBadge' : 'profileLocationStatusBadge');
+
+    if (detectBtn) detectBtn.classList.add('locating');
+    if (statusBadge) {
+      statusBadge.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="spinner-icon"><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
+        <span>Requesting device GPS location...</span>
+      `;
+      statusBadge.classList.add('visible');
+    }
+
+    const applyLocation = async (lat, lng, accuracy, approx = false) => {
+      this.tempCoordinates = { latitude: lat, longitude: lng, accuracy };
+
+      try {
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=14&addressdetails=1`, {
+          headers: { 'Accept': 'application/json' }
+        });
+        if (geoRes.ok) {
+          const geoData = await geoRes.json();
+          const addr = geoData.address || {};
+          const city = addr.city || addr.town || addr.village || addr.suburb || addr.municipality || addr.county || '';
+          const state = addr.state || '';
+          const country = addr.country || '';
+          const formatted = [city, state, country].filter(Boolean).join(', ');
+          if (locInput) locInput.value = formatted || `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+          if (statusBadge) {
+            statusBadge.innerHTML = `📍 <strong>${formatted || 'Located'}</strong> (${lat.toFixed(3)}°, ${lng.toFixed(3)}°)`;
+          }
+        } else {
+          if (locInput) locInput.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+          if (statusBadge) {
+            statusBadge.innerHTML = `📍 Coordinates: <strong>${lat.toFixed(4)}°, ${lng.toFixed(4)}°</strong>`;
+          }
+        }
+      } catch (_e) {
+        if (locInput) locInput.value = `${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+        if (statusBadge) {
+          statusBadge.innerHTML = `📍 Coordinates: <strong>${lat.toFixed(4)}°, ${lng.toFixed(4)}°</strong>`;
+        }
+      }
+
+      if (detectBtn) detectBtn.classList.remove('locating');
+    };
+
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          applyLocation(pos.coords.latitude, pos.coords.longitude, pos.coords.accuracy, false);
+        },
+        async (err) => {
+          console.warn('Device GPS unavailable or permission prompt dismissed:', err.message);
+          // Try IP-based location fallback so user is never blocked
+          try {
+            const ipRes = await fetch('https://ipapi.co/json/');
+            if (ipRes.ok) {
+              const ipData = await ipRes.json();
+              if (ipData.latitude && ipData.longitude) {
+                applyLocation(ipData.latitude, ipData.longitude, 10000, true);
+                return;
+              }
+            }
+          } catch (_ipErr) {}
+
+          if (statusBadge) {
+            statusBadge.innerHTML = `⚠️ GPS unavailable. Please enter your city or neighborhood manually.`;
+            statusBadge.classList.add('visible');
+          }
+          if (detectBtn) detectBtn.classList.remove('locating');
+        },
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 30000 }
+      );
+    } else {
+      if (statusBadge) {
+        statusBadge.innerHTML = `⚠️ Geolocation not supported. Please enter your city manually.`;
+        statusBadge.classList.add('visible');
+      }
+      if (detectBtn) detectBtn.classList.remove('locating');
+    }
+  }
+
+  // --- SUBMIT USER DETAILS FORM ---
+
+  async submitUserDetails(form, isProfileModal = false) {
+    const alertBox = document.getElementById(isProfileModal ? 'profileAlertBox' : 'gateDetailsAlertBox');
+    const submitBtn = document.getElementById(isProfileModal ? 'profileSaveBtn' : 'gateDetailsSubmitBtn');
+
+    if (alertBox) alertBox.style.display = 'none';
+    this.setButtonLoading(submitBtn, true, 'Saving Profile...');
+
+    try {
+      const formData = new FormData(form);
+      const fullName = (formData.get('fullName') || '').trim();
+      const phone = (formData.get('phone') || '').trim();
+      const location = (formData.get('location') || '').trim();
+      const aboutMe = (formData.get('aboutMe') || '').trim();
+
+      if (!fullName) throw new Error('Please enter your full name.');
+      if (!phone) throw new Error('Please enter your phone number.');
+      if (!location) throw new Error('Please provide or detect your current location.');
+      if (!aboutMe) throw new Error('Please tell us a brief note about yourself or dining preferences.');
+
+      const payload = {
+        fullName,
+        phone,
+        location,
+        latitude: this.tempCoordinates?.latitude ?? this.userDetails?.latitude ?? null,
+        longitude: this.tempCoordinates?.longitude ?? this.userDetails?.longitude ?? null,
+        locationAccuracy: this.tempCoordinates?.accuracy ?? this.userDetails?.location_accuracy ?? null,
+        aboutMe,
+        email: this.currentUser?.email || this.userDetails?.email || null,
+        userId: this.currentUser?.id || this.userDetails?.user_id || null
+      };
+
+      // 1. Send to Backend API
+      const res = await fetch('/api/user-details', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      let resData = null;
+      if (res.ok) {
+        resData = await res.json();
+      }
+
+      const savedRecord = resData?.data || {
+        ...payload,
+        full_name: payload.fullName,
+        about_me: payload.aboutMe
+      };
+
+      // 2. Direct Supabase Client Upsert (if authenticated and client ready)
+      if (this.client) {
+        try {
+          const sbPayload = {
+            full_name: payload.fullName,
+            phone: payload.phone,
+            location: payload.location,
+            latitude: payload.latitude,
+            longitude: payload.longitude,
+            location_accuracy: payload.locationAccuracy,
+            about_me: payload.aboutMe,
+            email: payload.email
+          };
+          if (payload.userId) sbPayload.user_id = payload.userId;
+          await this.client.from('user_details').upsert(sbPayload);
+        } catch (sbErr) {
+          console.warn('Direct Supabase upsert notice:', sbErr.message);
+        }
+      }
+
+      // 3. Save to local storage & cache
+      this.saveLocalUserDetails(savedRecord);
+
+      if (isProfileModal) {
+        if (alertBox) {
+          alertBox.textContent = 'Guest profile updated successfully!';
+          alertBox.className = 'auth-alert success';
+          alertBox.style.display = 'block';
+        }
+        if (typeof showToast === 'function') {
+          showToast('Guest profile updated successfully.', 'success');
+        }
+        setTimeout(() => this.closeProfileModal(), 1000);
+      } else {
+        // From gate
+        this.unlockGate();
+        if (typeof showToast === 'function') {
+          showToast(`Welcome to L'AURA, ${payload.fullName}! Guest profile active.`, 'success');
+        }
+      }
+    } catch (err) {
+      console.error('Save user details error:', err);
+      if (alertBox) {
+        alertBox.textContent = err.message || 'Failed to save details. Please check your inputs.';
+        alertBox.className = 'auth-alert error';
+        alertBox.style.display = 'block';
+      }
+    } finally {
+      this.setButtonLoading(submitBtn, false, isProfileModal ? 'Save Profile Changes' : 'Save Details & Enter L\'AURA');
+    }
+  }
+
+  // --- MANDATORY ACCESS GATE (Google/Gmail Lock & Onboarding) ---
 
   lockGate() {
     document.documentElement.classList.add('gate-locked');
@@ -366,48 +679,120 @@ class SupabaseAuthManager {
         <div class="gate-brand-title">L'AURA</div>
         <div class="gate-brand-sub">Brasserie &amp; Botanicals • San Francisco</div>
 
-        <div class="gate-badge-row">
-          <span class="gate-badge">
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-            Private Guest Verification
-          </span>
+        <!-- STEP 1: AUTHENTICATION (Google / Email OTP) -->
+        <div class="gate-step active" id="gateStepAuth">
+          <div class="gate-badge-row">
+            <span class="gate-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
+              Private Guest Verification
+            </span>
+          </div>
+
+          <h2 class="gate-heading">Sign In with Google to Enter</h2>
+          <p class="gate-desc">
+            Welcome to L'AURA. Our dining menus, cellar reserve, and reservations are curated for our registered guests. Please sign in with your Google / Gmail account or continue as a guest.
+          </p>
+
+          <!-- Alert Box -->
+          <div class="auth-alert" id="gateAlertBox" style="display: none;"></div>
+
+          <!-- Google 1-Click Sign-In Button -->
+          <button type="button" class="gate-google-btn" id="gateGoogleLoginBtn">
+            <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
+            </svg>
+            <span>Continue with Google (Gmail)</span>
+          </button>
+
+          <div class="auth-divider">
+            <span>or options</span>
+          </div>
+
+          <div style="display: flex; flex-direction: column; gap: 0.5rem; align-items: center;">
+            <button type="button" class="gate-toggle-email-btn" id="gateToggleEmailBtn">
+              Need to sign in with email OTP instead? Click here
+            </button>
+            <button type="button" class="text-link-btn" id="gateGuestBypassBtn" style="font-size: 0.825rem; font-weight: 600;">
+              Enter as Guest &amp; Complete Details &rarr;
+            </button>
+          </div>
+
+          <div class="gate-email-box" id="gateEmailBox" style="display: none;">
+            <form id="gateEmailForm">
+              <div class="form-group" style="margin-bottom: 0.75rem;">
+                <label class="form-label" for="gateEmailInput" style="font-size: 0.8rem;">Enter your Gmail or Email</label>
+                <input type="email" id="gateEmailInput" class="form-control" placeholder="name@gmail.com" required autocomplete="email">
+              </div>
+              <button type="submit" class="btn btn-primary btn-sm" id="gateEmailSubmitBtn" style="width: 100%; justify-content: center;">
+                Send Sign-In Code
+              </button>
+            </form>
+          </div>
         </div>
 
-        <h2 class="gate-heading">Sign In with Google to Enter</h2>
-        <p class="gate-desc">
-          Welcome to L'AURA. Our dining menus, cellar reserve, and table reservations are reserved for verified guests. Please sign in with your Google / Gmail account to enter the website.
-        </p>
+        <!-- STEP 2: USER DETAILS & LOCATION ONBOARDING -->
+        <div class="gate-step" id="gateStepDetails">
+          <div class="gate-badge-row">
+            <span class="gate-badge">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              Guest Onboarding &amp; Details
+            </span>
+          </div>
 
-        <!-- Alert Box -->
-        <div class="auth-alert" id="gateAlertBox" style="display: none;"></div>
+          <h2 class="gate-heading">Tell Us About Yourself</h2>
+          <p class="gate-desc" style="margin-bottom: 0.85rem;">
+            Please complete your guest profile with your name, phone number, current location, and dining notes to enter the website.
+          </p>
 
-        <!-- Google 1-Click Sign-In Button -->
-        <button type="button" class="gate-google-btn" id="gateGoogleLoginBtn">
-          <svg class="google-icon" width="20" height="20" viewBox="0 0 24 24">
-            <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
-            <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
-            <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/>
-            <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/>
-          </svg>
-          <span>Continue with Google (Gmail)</span>
-        </button>
+          <div id="gateDetailsEmailDisplay" style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem; font-style: italic;"></div>
 
-        <div class="auth-divider">
-          <span>or sign in with email</span>
-        </div>
+          <div class="auth-alert" id="gateDetailsAlertBox" style="display: none;"></div>
 
-        <button type="button" class="gate-toggle-email-btn" id="gateToggleEmailBtn">
-          Need to sign in with email OTP instead? Click here
-        </button>
-
-        <div class="gate-email-box" id="gateEmailBox" style="display: none;">
-          <form id="gateEmailForm">
-            <div class="form-group" style="margin-bottom: 0.75rem;">
-              <label class="form-label" for="gateEmailInput" style="font-size: 0.8rem;">Enter your Gmail or Email</label>
-              <input type="email" id="gateEmailInput" class="form-control" placeholder="name@gmail.com" required autocomplete="email">
+          <form id="gateDetailsForm" class="guest-details-form">
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label class="form-label" for="gateFullNameInput">Full Name <span style="color: var(--accent-terracotta);">*</span></label>
+              <div class="input-with-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                <input type="text" id="gateFullNameInput" name="fullName" class="form-control" placeholder="Julian Montgomery" required autocomplete="name">
+              </div>
             </div>
-            <button type="submit" class="btn btn-primary btn-sm" id="gateEmailSubmitBtn" style="width: 100%; justify-content: center;">
-              Send Sign-In Code
+
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label class="form-label" for="gatePhoneInput">Phone Number <span style="color: var(--accent-terracotta);">*</span></label>
+              <div class="input-with-icon">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                <input type="tel" id="gatePhoneInput" name="phone" class="form-control" placeholder="+1 (415) 555-0198" required autocomplete="tel">
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0.85rem;">
+              <label class="form-label" for="gateLocationInput">Current Location <span style="color: var(--accent-terracotta);">*</span></label>
+              <div class="location-input-wrapper">
+                <div class="location-input-row">
+                  <div class="input-with-icon">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                    <input type="text" id="gateLocationInput" name="location" class="form-control" placeholder="City or neighborhood" required autocomplete="address-level2">
+                  </div>
+                  <button type="button" class="location-detect-btn" id="gateDetectLocationBtn" title="Detect device GPS location">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                    <span>Detect Location</span>
+                  </button>
+                </div>
+                <div class="location-status-badge" id="gateLocationStatusBadge"></div>
+              </div>
+            </div>
+
+            <div class="form-group" style="margin-bottom: 1.25rem;">
+              <label class="form-label" for="gateAboutInput">About Yourself &amp; Dining Preferences <span style="color: var(--accent-terracotta);">*</span></label>
+              <textarea id="gateAboutInput" name="aboutMe" class="form-textarea" placeholder="Tell us about yourself (e.g., wine enthusiast, pescatarian, celebrating an anniversary, preferred seating, or expectations)..." required rows="3"></textarea>
+            </div>
+
+            <button type="submit" class="btn btn-primary auth-submit-btn" id="gateDetailsSubmitBtn">
+              <span>Save Details &amp; Enter Website</span>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
             </button>
           </form>
         </div>
@@ -429,6 +814,28 @@ class SupabaseAuthManager {
     const toggleEmailBtn = document.getElementById('gateToggleEmailBtn');
     const emailBox = document.getElementById('gateEmailBox');
     const emailForm = document.getElementById('gateEmailForm');
+    const guestBypassBtn = document.getElementById('gateGuestBypassBtn');
+    const detectLocBtn = document.getElementById('gateDetectLocationBtn');
+    const detailsForm = document.getElementById('gateDetailsForm');
+
+    if (guestBypassBtn) {
+      guestBypassBtn.addEventListener('click', () => {
+        this.showGateStep('details');
+      });
+    }
+
+    if (detectLocBtn) {
+      detectLocBtn.addEventListener('click', () => {
+        this.detectLocation('gate');
+      });
+    }
+
+    if (detailsForm) {
+      detailsForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.submitUserDetails(detailsForm, false);
+      });
+    }
 
     if (toggleEmailBtn && emailBox) {
       toggleEmailBtn.addEventListener('click', () => {
@@ -471,7 +878,7 @@ class SupabaseAuthManager {
         this.setButtonLoading(submitBtn, true, 'Sending...');
         if (alertBox) alertBox.style.display = 'none';
         try {
-          await this.sendOtp(email);
+          await this.sendMagicLink(email);
           this.openModal('otp');
           if (alertBox) {
             alertBox.textContent = '6-digit code sent to ' + email + '. Complete verification to unlock access.';
@@ -564,6 +971,10 @@ class SupabaseAuthManager {
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="18" y2="10"></line></svg>
                   <span>My Reservations</span>
                 </a>
+                <button type="button" class="user-popover-item" id="userProfileDetailsTrigger">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                  <span>My Guest Profile &amp; Location</span>
+                </button>
                 <a href="/menu" class="user-popover-item">
                   <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8h1a4 4 0 0 1 0 8h-1"></path><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path><line x1="6" y1="1" x2="6" y2="4"></line><line x1="10" y1="1" x2="10" y2="4"></line><line x1="14" y1="1" x2="14" y2="4"></line></svg>
                   <span>Curated Tasting Menu</span>
@@ -588,6 +999,14 @@ class SupabaseAuthManager {
           });
         }
 
+        const profileTrigger = document.getElementById('userProfileDetailsTrigger');
+        if (profileTrigger) {
+          profileTrigger.addEventListener('click', () => {
+            if (popover) popover.classList.remove('open');
+            this.openProfileModal();
+          });
+        }
+
         const signOutBtn = document.getElementById('authSignOutBtn');
         if (signOutBtn) {
           signOutBtn.addEventListener('click', () => this.signOut());
@@ -605,9 +1024,15 @@ class SupabaseAuthManager {
                 <span style="font-size: 0.8rem; color: var(--text-muted);">${email}</span>
               </div>
             </div>
-            <button class="btn btn-outline btn-sm" id="mobileSignOutBtn" style="margin-top: 0.75rem; width: 100%;">Sign Out</button>
+            <button class="btn btn-outline btn-sm" id="mobileUserProfileBtn" style="margin-top: 0.75rem; width: 100%;">My Guest Profile &amp; Location</button>
+            <button class="btn btn-outline btn-sm" id="mobileSignOutBtn" style="margin-top: 0.5rem; width: 100%;">Sign Out</button>
           </div>
         `;
+        const mobileProfileBtn = document.getElementById('mobileUserProfileBtn');
+        if (mobileProfileBtn) {
+          mobileProfileBtn.addEventListener('click', () => this.openProfileModal());
+        }
+
         const mobileSignOut = document.getElementById('mobileSignOutBtn');
         if (mobileSignOut) {
           mobileSignOut.addEventListener('click', () => this.signOut());
@@ -648,26 +1073,168 @@ class SupabaseAuthManager {
 
   // Pre-fill fields on reservation/contact pages
   syncPageFields() {
-    if (!this.currentUser) return;
-    const name = this.getUserDisplayName();
-    const email = this.currentUser.email || '';
+    const name = this.userDetails?.full_name || this.userDetails?.fullName || (this.currentUser ? this.getUserDisplayName() : '');
+    const email = this.currentUser?.email || this.userDetails?.email || '';
+    const phone = this.userDetails?.phone || '';
+    const notes = this.userDetails?.about_me || this.userDetails?.aboutMe || '';
 
     const resName = document.getElementById('resName');
     const resEmail = document.getElementById('resEmail');
-    if (resName && !resName.value) resName.value = name;
-    if (resEmail && !resEmail.value) resEmail.value = email;
+    const resPhone = document.getElementById('resPhone');
+    const resNotes = document.getElementById('resNotes');
+
+    if (resName && !resName.value && name) resName.value = name;
+    if (resEmail && !resEmail.value && email) resEmail.value = email;
+    if (resPhone && !resPhone.value && phone) resPhone.value = phone;
+    if (resNotes && !resNotes.value && notes) resNotes.value = notes;
 
     const contactName = document.getElementById('contactName');
     const contactEmail = document.getElementById('contactEmail');
-    if (contactName && !contactName.value) contactName.value = name;
-    if (contactEmail && !contactEmail.value) contactEmail.value = email;
+    const contactPhone = document.getElementById('contactPhone');
 
-    // Check if on reservation page: highlight user's reservations
-    const lookupInput = document.getElementById('lookupCodeInput');
+    if (contactName && !contactName.value && name) contactName.value = name;
+    if (contactEmail && !contactEmail.value && email) contactEmail.value = email;
+    if (contactPhone && !contactPhone.value && phone) contactPhone.value = phone;
+
+    // Highlight user email on lookup
     const lookupEmailHint = document.getElementById('lookupUserEmailHint');
-    if (lookupEmailHint) {
+    if (lookupEmailHint && email) {
       lookupEmailHint.textContent = `Logged in as ${email}`;
       lookupEmailHint.style.display = 'block';
+    }
+  }
+
+  // Injects the Profile Modal into document.body
+  injectProfileModalHTML() {
+    if (document.getElementById('userProfileModal')) return;
+
+    const modal = document.createElement('div');
+    modal.id = 'userProfileModal';
+    modal.className = 'profile-modal-overlay';
+    modal.setAttribute('role', 'dialog');
+    modal.setAttribute('aria-modal', 'true');
+    modal.setAttribute('aria-labelledby', 'profileModalTitle');
+
+    modal.innerHTML = `
+      <div class="profile-modal-card">
+        <button class="auth-modal-close" id="profileModalCloseBtn" aria-label="Close dialog">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+        </button>
+
+        <div class="auth-modal-header" style="margin-bottom: 1.25rem;">
+          <div class="auth-monogram">L</div>
+          <h2 class="auth-modal-title" id="profileModalTitle">Guest Profile &amp; Location</h2>
+          <p class="auth-modal-subtitle">Update your personal details, current location, and culinary preferences.</p>
+        </div>
+
+        <div class="auth-alert" id="profileAlertBox" style="display: none;"></div>
+
+        <form id="userProfileForm" class="guest-details-form">
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label class="form-label" for="profileFullNameInput">Full Name <span style="color: var(--accent-terracotta);">*</span></label>
+            <div class="input-with-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+              <input type="text" id="profileFullNameInput" name="fullName" class="form-control" required autocomplete="name">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label class="form-label" for="profilePhoneInput">Phone Number <span style="color: var(--accent-terracotta);">*</span></label>
+            <div class="input-with-icon">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+              <input type="tel" id="profilePhoneInput" name="phone" class="form-control" placeholder="+1 (415) 555-0198" required autocomplete="tel">
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 0.85rem;">
+            <label class="form-label" for="profileLocationInput">Current Location <span style="color: var(--accent-terracotta);">*</span></label>
+            <div class="location-input-wrapper">
+              <div class="location-input-row">
+                <div class="input-with-icon">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                  <input type="text" id="profileLocationInput" name="location" class="form-control" placeholder="City or neighborhood" required autocomplete="address-level2">
+                </div>
+                <button type="button" class="location-detect-btn" id="profileDetectLocationBtn" title="Detect device GPS location">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon></svg>
+                  <span>Detect Location</span>
+                </button>
+              </div>
+              <div class="location-status-badge" id="profileLocationStatusBadge"></div>
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-bottom: 1.25rem;">
+            <label class="form-label" for="profileAboutInput">About Yourself &amp; Dining Preferences <span style="color: var(--accent-terracotta);">*</span></label>
+            <textarea id="profileAboutInput" name="aboutMe" class="form-textarea" placeholder="Tell us about yourself (e.g., wine enthusiast, pescatarian, celebrating an anniversary, preferred seating)..." required rows="3"></textarea>
+          </div>
+
+          <button type="submit" class="btn btn-primary auth-submit-btn" id="profileSaveBtn">
+            <span>Save Profile Changes</span>
+          </button>
+        </form>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    const closeBtn = document.getElementById('profileModalCloseBtn');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => this.closeProfileModal());
+    }
+
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) this.closeProfileModal();
+    });
+
+    const detectBtn = document.getElementById('profileDetectLocationBtn');
+    if (detectBtn) {
+      detectBtn.addEventListener('click', () => this.detectLocation('profile'));
+    }
+
+    const form = document.getElementById('userProfileForm');
+    if (form) {
+      form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        this.submitUserDetails(form, true);
+      });
+    }
+  }
+
+  openProfileModal() {
+    this.injectProfileModalHTML();
+    const modal = document.getElementById('userProfileModal');
+    if (!modal) return;
+
+    const nameInput = document.getElementById('profileFullNameInput');
+    const phoneInput = document.getElementById('profilePhoneInput');
+    const locationInput = document.getElementById('profileLocationInput');
+    const aboutInput = document.getElementById('profileAboutInput');
+    const alertBox = document.getElementById('profileAlertBox');
+
+    if (alertBox) alertBox.style.display = 'none';
+
+    if (nameInput) {
+      nameInput.value = this.userDetails?.full_name || this.userDetails?.fullName || (this.currentUser ? this.getUserDisplayName() : '');
+    }
+    if (phoneInput) {
+      phoneInput.value = this.userDetails?.phone || '';
+    }
+    if (locationInput) {
+      locationInput.value = this.userDetails?.location || '';
+    }
+    if (aboutInput) {
+      aboutInput.value = this.userDetails?.about_me || this.userDetails?.aboutMe || '';
+    }
+
+    modal.classList.add('open');
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeProfileModal() {
+    const modal = document.getElementById('userProfileModal');
+    if (modal) {
+      modal.classList.remove('open');
+      document.body.style.overflow = '';
     }
   }
 

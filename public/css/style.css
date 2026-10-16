@@ -2444,4 +2444,182 @@ body.gate-locked > *:not(#siteAuthGate):not(#toastContainer) {
   color: var(--text-muted);
 }
 
+/* ==========================================================================
+   GUEST DETAILS ONBOARDING & PROFILE FORM (Name, Phone, Location, Bio)
+   ========================================================================== */
+
+.gate-step {
+  display: none;
+  animation: gateCardPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gate-step.active {
+  display: block;
+}
+
+.guest-details-form {
+  text-align: left;
+  margin-top: 1.25rem;
+}
+
+.guest-form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.85rem;
+}
+
+@media (max-width: 520px) {
+  .guest-form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.location-input-wrapper {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.location-input-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.location-input-row .input-with-icon {
+  flex: 1;
+}
+
+.location-detect-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  padding: 0 0.85rem;
+  background-color: var(--bg-surface-alt);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  color: var(--accent-terracotta);
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: var(--transition);
+}
+
+.location-detect-btn:hover {
+  background-color: var(--accent-terracotta-light);
+  border-color: var(--accent-terracotta);
+  transform: translateY(-1px);
+}
+
+.location-detect-btn.locating {
+  pointer-events: none;
+  opacity: 0.8;
+}
+
+.location-detect-btn.locating svg {
+  animation: radarPulse 1.2s infinite ease-in-out;
+}
+
+@keyframes radarPulse {
+  0% { transform: scale(0.9); opacity: 0.6; }
+  50% { transform: scale(1.15); opacity: 1; }
+  100% { transform: scale(0.9); opacity: 0.6; }
+}
+
+.location-status-badge {
+  display: none;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.76rem;
+  color: var(--accent-terracotta);
+  background-color: var(--accent-terracotta-light);
+  padding: 0.3rem 0.65rem;
+  border-radius: 4px;
+  border-left: 3px solid var(--accent-terracotta);
+}
+
+.location-status-badge.visible {
+  display: flex;
+}
+
+.form-textarea {
+  width: 100%;
+  padding: 0.75rem 0.95rem;
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-sans);
+  font-size: 0.875rem;
+  background-color: var(--bg-surface);
+  color: var(--text-primary);
+  line-height: 1.5;
+  resize: vertical;
+  min-height: 75px;
+  transition: var(--transition);
+}
+
+.form-textarea:focus {
+  outline: none;
+  border-color: var(--accent-terracotta);
+  box-shadow: 0 0 0 3px rgba(143, 79, 46, 0.15);
+}
+
+.guest-details-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background-color: var(--accent-terracotta-light);
+  color: var(--accent-terracotta);
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  padding: 0.2rem 0.55rem;
+  border-radius: 4px;
+  margin-bottom: 0.5rem;
+}
+
+/* User Profile Modal in Navbar */
+.profile-modal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background-color: rgba(30, 30, 28, 0.55);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.profile-modal-overlay.open {
+  opacity: 1;
+  visibility: visible;
+}
+
+.profile-modal-card {
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-medium);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-lg);
+  max-width: 520px;
+  width: 100%;
+  padding: 2.25rem;
+  position: relative;
+  max-height: 90vh;
+  overflow-y: auto;
+  transform: translateY(12px) scale(0.98);
+  transition: transform 0.25s ease;
+}
+
+.profile-modal-overlay.open .profile-modal-card {
+  transform: translateY(0) scale(1);
+}
+
+
 
