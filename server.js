@@ -9,8 +9,8 @@ const PORT = process.env.PORT || 3000;
 const isVercel = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.json({ limit: '15mb' }));
+app.use(express.urlencoded({ extended: true, limit: '15mb' }));
 
 // --- RESILIENT DATA MANAGEMENT FOR LOCAL AND SERVERLESS (VERCEL) ---
 
@@ -388,6 +388,8 @@ apiRouter.post('/user-details', async (req, res) => {
       locationAccuracy,
       aboutMe,
       about,
+      avatarUrl,
+      avatar_url,
       email,
       userId
     } = req.body;
@@ -396,6 +398,7 @@ apiRouter.post('/user-details', async (req, res) => {
     const resolvedPhone = (phone || '').trim();
     const resolvedLocation = (location || '').trim();
     const resolvedAbout = (aboutMe || about || '').trim();
+    const resolvedAvatarUrl = (avatarUrl || avatar_url || '').trim() || null;
     const resolvedEmail = (email || '').trim().toLowerCase();
     const resolvedUserId = (userId || '').trim() || null;
 
@@ -428,6 +431,7 @@ apiRouter.post('/user-details', async (req, res) => {
       full_name: resolvedName,
       phone: resolvedPhone,
       email: resolvedEmail || null,
+      avatar_url: resolvedAvatarUrl || (existingIndex >= 0 ? records[existingIndex].avatar_url : null),
       location: resolvedLocation,
       latitude: latitude !== undefined && latitude !== null && !isNaN(parseFloat(latitude)) ? parseFloat(latitude) : null,
       longitude: longitude !== undefined && longitude !== null && !isNaN(parseFloat(longitude)) ? parseFloat(longitude) : null,
@@ -451,6 +455,7 @@ apiRouter.post('/user-details', async (req, res) => {
           full_name: recordData.full_name,
           phone: recordData.phone,
           email: recordData.email,
+          avatar_url: recordData.avatar_url,
           location: recordData.location,
           latitude: recordData.latitude,
           longitude: recordData.longitude,
@@ -529,8 +534,66 @@ apiRouter.get('/user-details/me', (req, res) => {
   res.json({ exists: true, profile: found });
 });
 
+// POST /api/upload (Resilient image upload handler for local dev & fallback)
+apiRouter.post('/upload', (req, res) => {
+  try {
+    const { image, filename } = req.body;
+    if (!image) {
+      return res.status(400).json({ error: 'No image data provided.' });
+    }
+
+    const matches = image.match(/^data:([A-Za-z-+\/]+);base64,(.+)$/);
+    let buffer;
+    let ext = 'jpg';
+
+    if (matches && matches.length === 3) {
+      const mime = matches[1];
+      ext = mime.split('/')[1] || 'jpg';
+      if (ext === 'jpeg') ext = 'jpg';
+      buffer = Buffer.from(matches[2], 'base64');
+    } else {
+      buffer = Buffer.from(image, 'base64');
+    }
+
+    const cleanName = (filename || 'avatar').replace(/[^a-zA-Z0-9_-]/g, '');
+    const finalFilename = `${cleanName}_${Date.now()}.${ext}`;
+
+    const uploadsDir = isVercel
+      ? path.join('/tmp', 'uploads')
+      : path.join(__dirname, 'public', 'uploads');
+
+    if (!fs.existsSync(uploadsDir)) {
+      fs.mkdirSync(uploadsDir, { recursive: true });
+    }
+
+    const targetFilePath = path.join(uploadsDir, finalFilename);
+    fs.writeFileSync(targetFilePath, buffer);
+
+    const publicUrl = `/uploads/${finalFilename}`;
+    console.log(`[STORAGE] Uploaded photo locally: ${publicUrl}`);
+
+    res.json({
+      success: true,
+      url: publicUrl,
+      filename: finalFilename
+    });
+  } catch (err) {
+    console.error('Upload processing error:', err);
+    res.status(500).json({ error: 'Failed to process uploaded photo: ' + err.message });
+  }
+});
+
 // Mount API router strictly under /api (NEVER at the root '/')
 app.use('/api', apiRouter);
+
+// Serve uploads folder (especially on Vercel /tmp or local public/uploads)
+const uploadsStaticDir = isVercel
+  ? path.join('/tmp', 'uploads')
+  : path.join(__dirname, 'public', 'uploads');
+if (!fs.existsSync(uploadsStaticDir)) {
+  try { fs.mkdirSync(uploadsStaticDir, { recursive: true }); } catch (_e) {}
+}
+app.use('/uploads', express.static(uploadsStaticDir));
 
 // --- STATIC ASSETS & HTML PAGES ---
 app.use(express.static(path.join(__dirname, 'public')));

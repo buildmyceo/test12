@@ -2621,5 +2621,147 @@ body.gate-locked > *:not(#siteAuthGate):not(#toastContainer) {
   transform: translateY(0) scale(1);
 }
 
+/* ==========================================================================
+   AVATAR / PHOTO UPLOADER (Supabase Storage System)
+   ========================================================================== */
+
+.avatar-upload-section {
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  background-color: var(--bg-surface-alt);
+  border: 1px dashed var(--border-medium);
+  border-radius: var(--radius-sm);
+  transition: var(--transition);
+}
+
+.avatar-upload-section:hover {
+  border-color: var(--accent-terracotta);
+}
+
+.avatar-upload-container {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.avatar-preview-wrapper {
+  position: relative;
+  width: 76px;
+  height: 76px;
+  border-radius: 50%;
+  border: 2px solid var(--accent-terracotta);
+  background-color: var(--bg-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(30, 30, 28, 0.08);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.avatar-preview-wrapper:hover {
+  transform: scale(1.04);
+  box-shadow: 0 6px 16px rgba(143, 79, 46, 0.2);
+}
+
+.avatar-preview-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.avatar-preview-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  color: var(--accent-terracotta);
+  background: radial-gradient(circle, var(--accent-terracotta-light) 0%, var(--bg-surface) 75%);
+}
+
+.avatar-upload-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(30, 30, 28, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #FFFFFF;
+  opacity: 0;
+  border-radius: 50%;
+  transition: opacity 0.2s ease;
+}
+
+.avatar-preview-wrapper:hover .avatar-upload-overlay {
+  opacity: 1;
+}
+
+.avatar-upload-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  text-align: left;
+}
+
+.avatar-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.avatar-pick-btn {
+  padding: 0.4rem 0.85rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+.avatar-remove-btn {
+  background: none;
+  border: 1px solid var(--border-medium);
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  line-height: 1;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.avatar-remove-btn:hover {
+  background-color: var(--accent-terracotta-light);
+  color: var(--accent-terracotta);
+  border-color: var(--accent-terracotta);
+}
+
+.avatar-upload-hint {
+  font-size: 0.72rem;
+  color: var(--text-muted);
+  line-height: 1.3;
+}
+
+.avatar-upload-status {
+  font-size: 0.76rem;
+  font-weight: 500;
+  min-height: 18px;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
 
 

@@ -316,6 +316,9 @@ class SupabaseAuthManager {
   // --- HELPERS ---
 
   getUserAvatarUrl() {
+    if (this.userDetails?.avatar_url || this.userDetails?.avatarUrl) {
+      return this.userDetails.avatar_url || this.userDetails.avatarUrl;
+    }
     if (!this.currentUser) return null;
     return this.currentUser.user_metadata?.avatar_url || this.currentUser.user_metadata?.picture || null;
   }
@@ -417,6 +420,171 @@ class SupabaseAuthManager {
     }
   }
 
+  // --- AVATAR & STORAGE HELPERS ---
+
+  setAvatarPreview(target, url) {
+    const isGate = target === 'gate';
+    const previewImg = document.getElementById(isGate ? 'gateAvatarPreviewImg' : 'profileAvatarPreviewImg');
+    const placeholder = document.getElementById(isGate ? 'gateAvatarPlaceholder' : 'profileAvatarPlaceholder');
+    const pickBtnText = document.getElementById(isGate ? 'gateAvatarPickBtnText' : 'profileAvatarPickBtnText');
+    const removeBtn = document.getElementById(isGate ? 'gateAvatarRemoveBtn' : 'profileAvatarRemoveBtn');
+    const urlInput = document.getElementById(isGate ? 'gateAvatarUrlInput' : 'profileAvatarUrlInput');
+
+    if (urlInput) urlInput.value = url || '';
+
+    if (url) {
+      if (previewImg) {
+        previewImg.src = url;
+        previewImg.style.display = 'block';
+      }
+      if (placeholder) placeholder.style.display = 'none';
+      if (pickBtnText) pickBtnText.textContent = 'Change Photo';
+      if (removeBtn) removeBtn.style.display = 'inline-flex';
+    } else {
+      if (previewImg) {
+        previewImg.src = '';
+        previewImg.style.display = 'none';
+      }
+      if (placeholder) placeholder.style.display = 'flex';
+      if (pickBtnText) pickBtnText.textContent = 'Upload Photo';
+      if (removeBtn) removeBtn.style.display = 'none';
+    }
+  }
+
+  clearAvatar(target) {
+    this.setAvatarPreview(target, '');
+    const isGate = target === 'gate';
+    const statusEl = document.getElementById(isGate ? 'gateAvatarUploadStatus' : 'profileAvatarUploadStatus');
+    const fileInput = document.getElementById(isGate ? 'gateAvatarFileInput' : 'profileAvatarFileInput');
+    if (statusEl) statusEl.innerHTML = '';
+    if (fileInput) fileInput.value = '';
+    if (this.userDetails) {
+      this.userDetails.avatar_url = null;
+      this.userDetails.avatarUrl = null;
+      this.saveLocalUserDetails(this.userDetails);
+      this.updateNavbarUI();
+    }
+  }
+
+  async uploadAvatar(file, target = 'gate') {
+    const isGate = target === 'gate';
+    const statusEl = document.getElementById(isGate ? 'gateAvatarUploadStatus' : 'profileAvatarUploadStatus');
+    const pickBtn = document.getElementById(isGate ? 'gateAvatarPickBtn' : 'profileAvatarPickBtn');
+    const previewImg = document.getElementById(isGate ? 'gateAvatarPreviewImg' : 'profileAvatarPreviewImg');
+    const placeholder = document.getElementById(isGate ? 'gateAvatarPlaceholder' : 'profileAvatarPlaceholder');
+
+    if (!file) return;
+
+    if (!file.type.startsWith('image/')) {
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color: var(--accent-terracotta);">Please select an image file (JPG, PNG, WebP).</span>';
+      }
+      return;
+    }
+
+    if (file.size > 5 * 1024 * 1024) {
+      if (statusEl) {
+        statusEl.innerHTML = '<span style="color: var(--accent-terracotta);">Image is too large. Max size is 5MB.</span>';
+      }
+      return;
+    }
+
+    // Local instant preview
+    const objectUrl = URL.createObjectURL(file);
+    if (previewImg) {
+      previewImg.src = objectUrl;
+      previewImg.style.display = 'block';
+    }
+    if (placeholder) placeholder.style.display = 'none';
+
+    if (statusEl) {
+      statusEl.innerHTML = `
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" class="spinner-icon"><path d="M12 2a10 10 0 0 1 10 10"></path></svg>
+        <span style="color: var(--text-muted);">Uploading to Supabase Storage...</span>
+      `;
+    }
+    if (pickBtn) pickBtn.disabled = true;
+
+    try {
+      const ext = (file.name.split('.').pop() || 'jpg').toLowerCase().replace(/[^a-z0-9]/g, '');
+      const uniqueId = this.currentUser?.id || `guest_${Date.now()}`;
+      const filePath = `${uniqueId}/${Date.now()}_${Math.random().toString(36).substring(2, 7)}.${ext}`;
+
+      let uploadedUrl = null;
+
+      // 1. Supabase Storage client upload
+      if (this.client && this.client.storage) {
+        try {
+          const { data, error } = await this.client.storage
+            .from('avatars')
+            .upload(filePath, file, {
+              cacheControl: '3600',
+              upsert: true
+            });
+
+          if (!error && data) {
+            const { data: urlData } = this.client.storage.from('avatars').getPublicUrl(data.path || filePath);
+            if (urlData?.publicUrl) {
+              uploadedUrl = urlData.publicUrl;
+              console.log('[SUPABASE STORAGE] Avatar uploaded successfully:', uploadedUrl);
+            }
+          } else if (error) {
+            console.warn('[SUPABASE STORAGE] Upload warning:', error.message);
+          }
+        } catch (sbStorageErr) {
+          console.warn('[SUPABASE STORAGE] Storage exception:', sbStorageErr.message);
+        }
+      }
+
+      // 2. Resilient API fallback if storage bucket not yet created
+      if (!uploadedUrl) {
+        try {
+          const base64Data = await new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(reader.result);
+            reader.onerror = reject;
+            reader.readAsDataURL(file);
+          });
+
+          const fallbackRes = await fetch('/api/upload', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              image: base64Data,
+              filename: `avatar_${uniqueId}`
+            })
+          });
+
+          if (fallbackRes.ok) {
+            const fallbackData = await fallbackRes.json();
+            if (fallbackData.url) {
+              uploadedUrl = fallbackData.url;
+              console.log('[FALLBACK STORAGE] Local upload successful:', uploadedUrl);
+            }
+          }
+        } catch (fbErr) {
+          console.warn('Fallback photo upload failed:', fbErr);
+        }
+      }
+
+      if (uploadedUrl) {
+        this.setAvatarPreview(target, uploadedUrl);
+        if (statusEl) {
+          statusEl.innerHTML = `<span style="color: #2e7d32; font-weight: 600;">✓ Photo uploaded to Supabase Storage</span>`;
+        }
+      } else {
+        throw new Error('Upload could not be completed.');
+      }
+    } catch (err) {
+      console.error('Avatar upload failed:', err);
+      if (statusEl) {
+        statusEl.innerHTML = `<span style="color: var(--accent-terracotta);">Upload failed: ${err.message}</span>`;
+      }
+    } finally {
+      if (pickBtn) pickBtn.disabled = false;
+    }
+  }
+
   populateGateUserDetails() {
     const nameInput = document.getElementById('gateFullNameInput');
     const emailDisplay = document.getElementById('gateDetailsEmailDisplay');
@@ -443,6 +611,11 @@ class SupabaseAuthManager {
     }
     if (aboutInput && !aboutInput.value) {
       aboutInput.value = this.userDetails?.about_me || this.userDetails?.aboutMe || '';
+    }
+
+    const currentAvatar = this.userDetails?.avatar_url || this.userDetails?.avatarUrl || this.getUserAvatarUrl();
+    if (currentAvatar) {
+      this.setAvatarPreview('gate', currentAvatar);
     }
   }
 
@@ -548,6 +721,7 @@ class SupabaseAuthManager {
       const phone = (formData.get('phone') || '').trim();
       const location = (formData.get('location') || '').trim();
       const aboutMe = (formData.get('aboutMe') || '').trim();
+      const avatarUrl = (formData.get('avatarUrl') || '').trim() || this.userDetails?.avatar_url || null;
 
       if (!fullName) throw new Error('Please enter your full name.');
       if (!phone) throw new Error('Please enter your phone number.');
@@ -562,6 +736,7 @@ class SupabaseAuthManager {
         longitude: this.tempCoordinates?.longitude ?? this.userDetails?.longitude ?? null,
         locationAccuracy: this.tempCoordinates?.accuracy ?? this.userDetails?.location_accuracy ?? null,
         aboutMe,
+        avatarUrl,
         email: this.currentUser?.email || this.userDetails?.email || null,
         userId: this.currentUser?.id || this.userDetails?.user_id || null
       };
@@ -581,7 +756,9 @@ class SupabaseAuthManager {
       const savedRecord = resData?.data || {
         ...payload,
         full_name: payload.fullName,
-        about_me: payload.aboutMe
+        about_me: payload.aboutMe,
+        avatar_url: avatarUrl,
+        avatarUrl: avatarUrl
       };
 
       // 2. Direct Supabase Client Upsert (if authenticated and client ready)
@@ -595,6 +772,7 @@ class SupabaseAuthManager {
             longitude: payload.longitude,
             location_accuracy: payload.locationAccuracy,
             about_me: payload.aboutMe,
+            avatar_url: avatarUrl,
             email: payload.email
           };
           if (payload.userId) sbPayload.user_id = payload.userId;
@@ -606,6 +784,7 @@ class SupabaseAuthManager {
 
       // 3. Save to local storage & cache
       this.saveLocalUserDetails(savedRecord);
+      this.updateNavbarUI();
 
       if (isProfileModal) {
         if (alertBox) {
@@ -752,6 +931,45 @@ class SupabaseAuthManager {
           <div class="auth-alert" id="gateDetailsAlertBox" style="display: none;"></div>
 
           <form id="gateDetailsForm" class="guest-details-form">
+            <!-- AVATAR PHOTO UPLOAD (Supabase Storage) -->
+            <div class="avatar-upload-section">
+              <div class="avatar-upload-container">
+                <div class="avatar-preview-wrapper" id="gateAvatarPreviewWrapper" title="Click to upload profile photo">
+                  <img id="gateAvatarPreviewImg" src="" alt="Avatar Preview" class="avatar-preview-img" style="display: none;">
+                  <div id="gateAvatarPlaceholder" class="avatar-preview-placeholder">
+                    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                  </div>
+                  <div class="avatar-upload-overlay" id="gateAvatarUploadOverlay">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                      <circle cx="12" cy="13" r="4"></circle>
+                    </svg>
+                  </div>
+                </div>
+                <div class="avatar-upload-info">
+                  <label class="form-label" style="margin-bottom: 0.2rem;">Guest Photo (Optional)</label>
+                  <div class="avatar-actions-row">
+                    <button type="button" class="btn btn-outline btn-sm avatar-pick-btn" id="gateAvatarPickBtn">
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                      </svg>
+                      <span id="gateAvatarPickBtnText">Upload Photo</span>
+                    </button>
+                    <button type="button" class="avatar-remove-btn" id="gateAvatarRemoveBtn" style="display: none;" title="Remove photo">&times;</button>
+                  </div>
+                  <span class="avatar-upload-hint">Stored in Supabase Storage • JPG, PNG, WebP up to 5MB</span>
+                  <div class="avatar-upload-status" id="gateAvatarUploadStatus"></div>
+                </div>
+              </div>
+              <input type="file" id="gateAvatarFileInput" accept="image/png, image/jpeg, image/webp, image/gif" style="display: none;">
+              <input type="hidden" id="gateAvatarUrlInput" name="avatarUrl" value="">
+            </div>
+
             <div class="form-group" style="margin-bottom: 0.85rem;">
               <label class="form-label" for="gateFullNameInput">Full Name <span style="color: var(--accent-terracotta);">*</span></label>
               <div class="input-with-icon">
@@ -817,6 +1035,31 @@ class SupabaseAuthManager {
     const guestBypassBtn = document.getElementById('gateGuestBypassBtn');
     const detectLocBtn = document.getElementById('gateDetectLocationBtn');
     const detailsForm = document.getElementById('gateDetailsForm');
+    const gateAvatarFileInput = document.getElementById('gateAvatarFileInput');
+    const gateAvatarPickBtn = document.getElementById('gateAvatarPickBtn');
+    const gateAvatarWrapper = document.getElementById('gateAvatarPreviewWrapper');
+    const gateAvatarRemoveBtn = document.getElementById('gateAvatarRemoveBtn');
+
+    if (gateAvatarPickBtn && gateAvatarFileInput) {
+      gateAvatarPickBtn.addEventListener('click', () => gateAvatarFileInput.click());
+    }
+    if (gateAvatarWrapper && gateAvatarFileInput) {
+      gateAvatarWrapper.addEventListener('click', () => gateAvatarFileInput.click());
+    }
+    if (gateAvatarFileInput) {
+      gateAvatarFileInput.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          this.uploadAvatar(file, 'gate');
+        }
+      });
+    }
+    if (gateAvatarRemoveBtn) {
+      gateAvatarRemoveBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.clearAvatar('gate');
+      });
+    }
 
     if (guestBypassBtn) {
       guestBypassBtn.addEventListener('click', () => {
@@ -1130,6 +1373,45 @@ class SupabaseAuthManager {
         <div class="auth-alert" id="profileAlertBox" style="display: none;"></div>
 
         <form id="userProfileForm" class="guest-details-form">
+          <!-- AVATAR PHOTO UPLOADER (Supabase Storage System) -->
+          <div class="avatar-upload-section">
+            <div class="avatar-upload-container">
+              <div class="avatar-preview-wrapper" id="profileAvatarPreviewWrapper" title="Click to upload profile photo">
+                <img id="profileAvatarPreviewImg" src="" alt="Avatar Preview" class="avatar-preview-img" style="display: none;">
+                <div id="profileAvatarPlaceholder" class="avatar-preview-placeholder">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                    <circle cx="12" cy="7" r="4"></circle>
+                  </svg>
+                </div>
+                <div class="avatar-upload-overlay" id="profileAvatarUploadOverlay">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                    <circle cx="12" cy="13" r="4"></circle>
+                  </svg>
+                </div>
+              </div>
+              <div class="avatar-upload-info">
+                <label class="form-label" style="margin-bottom: 0.2rem;">Guest Photo</label>
+                <div class="avatar-actions-row">
+                  <button type="button" class="btn btn-outline btn-sm avatar-pick-btn" id="profileAvatarPickBtn">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                      <polyline points="17 8 12 3 7 8"></polyline>
+                      <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    <span id="profileAvatarPickBtnText">Upload Photo</span>
+                  </button>
+                  <button type="button" class="avatar-remove-btn" id="profileAvatarRemoveBtn" style="display: none;" title="Remove photo">&times;</button>
+                </div>
+                <span class="avatar-upload-hint">Stored in Supabase Storage • JPG, PNG, WebP up to 5MB</span>
+                <div class="avatar-upload-status" id="profileAvatarUploadStatus"></div>
+              </div>
+            </div>
+            <input type="file" id="profileAvatarFileInput" accept="image/png, image/jpeg, image/webp, image/gif" style="display: none;">
+            <input type="hidden" id="profileAvatarUrlInput" name="avatarUrl" value="">
+          </div>
+
           <div class="form-group" style="margin-bottom: 0.85rem;">
             <label class="form-label" for="profileFullNameInput">Full Name <span style="color: var(--accent-terracotta);">*</span></label>
             <div class="input-with-icon">
@@ -1191,6 +1473,32 @@ class SupabaseAuthManager {
       detectBtn.addEventListener('click', () => this.detectLocation('profile'));
     }
 
+    const profileAvatarFileInput = document.getElementById('profileAvatarFileInput');
+    const profileAvatarPickBtn = document.getElementById('profileAvatarPickBtn');
+    const profileAvatarWrapper = document.getElementById('profileAvatarPreviewWrapper');
+    const profileAvatarRemoveBtn = document.getElementById('profileAvatarRemoveBtn');
+
+    if (profileAvatarPickBtn && profileAvatarFileInput) {
+      profileAvatarPickBtn.addEventListener('click', () => profileAvatarFileInput.click());
+    }
+    if (profileAvatarWrapper && profileAvatarFileInput) {
+      profileAvatarWrapper.addEventListener('click', () => profileAvatarFileInput.click());
+    }
+    if (profileAvatarFileInput) {
+      profileAvatarFileInput.addEventListener('change', (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          this.uploadAvatar(file, 'profile');
+        }
+      });
+    }
+    if (profileAvatarRemoveBtn) {
+      profileAvatarRemoveBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.clearAvatar('profile');
+      });
+    }
+
     const form = document.getElementById('userProfileForm');
     if (form) {
       form.addEventListener('submit', (e) => {
@@ -1224,6 +1532,13 @@ class SupabaseAuthManager {
     }
     if (aboutInput) {
       aboutInput.value = this.userDetails?.about_me || this.userDetails?.aboutMe || '';
+    }
+
+    const currentAvatar = this.userDetails?.avatar_url || this.userDetails?.avatarUrl || this.getUserAvatarUrl();
+    if (currentAvatar) {
+      this.setAvatarPreview('profile', currentAvatar);
+    } else {
+      this.clearAvatar('profile');
     }
 
     modal.classList.add('open');
